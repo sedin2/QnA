@@ -1,5 +1,6 @@
 package com.sedin.qna.article.model;
 
+import com.sedin.qna.account.model.Account;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,6 +10,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.time.LocalDateTime;
 
@@ -42,4 +45,8 @@ public class Article {
 
     @Column(name = "modified_by", nullable = false)
     private String modifiedBy;
+
+    @ManyToOne
+    @JoinColumn(name = "account_id")
+    private Account account;
 }
