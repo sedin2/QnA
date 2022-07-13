@@ -1,12 +1,8 @@
 package com.sedin.qna.article.model;
 
-import com.sedin.qna.account.model.Account;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 class ArticleTest {
 
@@ -30,5 +26,4 @@ class ArticleTest {
         assertThat(article.getTitle()).isEqualTo(TITLE);
         assertThat(article.getContent()).isEqualTo(CONTENT);
     }
-
 }
