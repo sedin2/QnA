@@ -3,7 +3,9 @@ package com.sedin.qna.account.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sedin.qna.account.model.Account;
 import com.sedin.qna.account.model.dto.AccountSignUpDto;
+import com.sedin.qna.account.model.response.AccountApiResponse;
 import com.sedin.qna.account.repository.AccountRepository;
+import com.sedin.qna.network.Header;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,11 +22,23 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public String signUp(AccountSignUpDto account) {
-        String message = "SIGN UP SUCCESS";
+    public Header<AccountApiResponse> signUp(AccountSignUpDto account) {
         Account newAccount = mapper.convertValue(account, Account.class);
         accountRepository.save(newAccount);
 
-        return message;
+        return response(newAccount);
+    }
+
+    private Header<AccountApiResponse> response(Account account) {
+        AccountApiResponse accountApiResponse = AccountApiResponse.builder()
+                .id(account.getId())
+                .loginId(account.getLoginId())
+                .name(account.getName())
+                .bornDate(account.getBornDate())
+                .sex(account.getSex())
+                .email(account.getEmail())
+                .build();
+
+        return Header.OK(accountApiResponse);
     }
 }
