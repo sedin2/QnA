@@ -1,7 +1,9 @@
 package com.sedin.qna.account.controller;
 
 import com.sedin.qna.account.model.dto.AccountSignUpDto;
+import com.sedin.qna.account.model.response.AccountApiResponse;
 import com.sedin.qna.account.service.AccountService;
+import com.sedin.qna.network.Header;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,7 +23,7 @@ public class AccountController {
 
     @PostMapping
     @ResponseStatus(code = HttpStatus.CREATED)
-    public String signUp(@RequestBody AccountSignUpDto account) {
+    public Header<AccountApiResponse> signUp(@RequestBody AccountSignUpDto account) {
         return accountService.signUp(account);
     }
 }
