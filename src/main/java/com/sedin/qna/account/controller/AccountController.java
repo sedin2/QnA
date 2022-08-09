@@ -1,5 +1,6 @@
 package com.sedin.qna.account.controller;
 
+import com.sedin.qna.account.model.dto.AccountLoginDto;
 import com.sedin.qna.account.model.dto.AccountSignUpDto;
 import com.sedin.qna.account.model.response.AccountApiResponse;
 import com.sedin.qna.account.service.AccountService;
@@ -22,8 +23,14 @@ public class AccountController {
     }
 
     @PostMapping
-    @ResponseStatus(code = HttpStatus.CREATED)
+    @ResponseStatus(HttpStatus.CREATED)
     public Header<AccountApiResponse> signUp(@RequestBody AccountSignUpDto account) {
         return accountService.signUp(account);
+    }
+
+    @PostMapping("/login")
+    @ResponseStatus(HttpStatus.OK)
+    public Header<String> login(@RequestBody AccountLoginDto account) {
+        return accountService.login(account);
     }
 }

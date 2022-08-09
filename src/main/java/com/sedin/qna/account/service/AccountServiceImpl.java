@@ -2,12 +2,15 @@ package com.sedin.qna.account.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sedin.qna.account.model.Account;
+import com.sedin.qna.account.model.dto.AccountLoginDto;
 import com.sedin.qna.account.model.dto.AccountSignUpDto;
 import com.sedin.qna.account.model.response.AccountApiResponse;
 import com.sedin.qna.account.repository.AccountRepository;
 import com.sedin.qna.network.Header;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.NoSuchElementException;
 
 @Service
 @Transactional
@@ -27,6 +30,18 @@ public class AccountServiceImpl implements AccountService {
         accountRepository.save(newAccount);
 
         return response(newAccount);
+    }
+
+    @Override
+    public Header<String> login(AccountLoginDto account) {
+        accountRepository.findByLoginIdAndPassword(account.getLoginId(), account.getPassword())
+                .orElseThrow(NoSuchElementException::new);
+
+        return response("JWT TOKEN");
+    }
+
+    private Header<String> response(String token) {
+        return Header.OK(token);
     }
 
     private Header<AccountApiResponse> response(Account account) {
