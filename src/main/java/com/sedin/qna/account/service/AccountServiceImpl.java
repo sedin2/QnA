@@ -7,6 +7,7 @@ import com.sedin.qna.account.model.dto.AccountSignUpDto;
 import com.sedin.qna.account.model.response.AccountApiResponse;
 import com.sedin.qna.account.repository.AccountRepository;
 import com.sedin.qna.network.Header;
+import com.sedin.qna.util.JwtUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,10 +18,12 @@ import java.util.NoSuchElementException;
 public class AccountServiceImpl implements AccountService {
 
     private final ObjectMapper mapper;
+    private final JwtUtil jwtUtil;
     private final AccountRepository accountRepository;
 
-    public AccountServiceImpl(ObjectMapper mapper, AccountRepository accountRepository) {
+    public AccountServiceImpl(ObjectMapper mapper, JwtUtil jwtUtil, AccountRepository accountRepository) {
         this.mapper = mapper;
+        this.jwtUtil = jwtUtil;
         this.accountRepository = accountRepository;
     }
 
@@ -34,10 +37,12 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Header<String> login(AccountLoginDto account) {
-        accountRepository.findByLoginIdAndPassword(account.getLoginId(), account.getPassword())
+        Account loginAccount = accountRepository.findByLoginIdAndPassword(account.getLoginId(), account.getPassword())
                 .orElseThrow(NoSuchElementException::new);
 
-        return response("JWT TOKEN");
+        String jwtToken = jwtUtil.encode(loginAccount.getId());
+
+        return response(jwtToken);
     }
 
     private Header<String> response(String token) {
