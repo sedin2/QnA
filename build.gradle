@@ -25,6 +25,12 @@ dependencies {
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'com.h2database:h2'
     annotationProcessor 'org.projectlombok:lombok'
+
+    // Jwt
+    compile 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtime 'io.jsonwebtoken:jjwt-impl:0.11.5',
+            'io.jsonwebtoken:jjwt-jackson:0.11.5'
+    compile 'org.apache.commons:commons-lang3:3.12.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
