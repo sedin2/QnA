@@ -42,4 +42,9 @@ public class Account {
 
     @Column(unique = true, nullable = false, length = 45)
     private String email;
+
+    public void updatePasswordAndEmail(String newPassword, String email) {
+        this.password = newPassword;
+        this.email = email;
+    }
 }
