@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sedin.qna.account.model.Account;
 import com.sedin.qna.account.model.dto.AccountLoginDto;
 import com.sedin.qna.account.model.dto.AccountSignUpDto;
+import com.sedin.qna.account.model.dto.AccountUpdateDto;
 import com.sedin.qna.account.model.response.AccountApiResponse;
 import com.sedin.qna.account.repository.AccountRepository;
 import com.sedin.qna.network.Header;
@@ -43,6 +44,21 @@ public class AccountServiceImpl implements AccountService {
         String jwtToken = jwtUtil.encode(loginAccount.getId());
 
         return response(jwtToken);
+    }
+
+    @Override
+    public Header<AccountApiResponse> update(Long id, AccountUpdateDto account) {
+        Account updateAccount = accountRepository.findByIdAndPassword(id, account.getOriginalPassword())
+                .orElseThrow(NoSuchElementException::new);
+
+        updateAccount.updatePasswordAndEmail(account.getNewPassword(), account.getEmail());
+
+        return response(updateAccount);
+    }
+
+    @Override
+    public void delete(Long id) {
+        accountRepository.deleteById(id);
     }
 
     private Header<String> response(String token) {
