@@ -32,11 +32,11 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Header<AccountApiResponse> signUp(AccountSignUpDto account) {
         if (accountRepository.existsByLoginId(account.getLoginId())) {
-            throw new DuplicatedException("LoginId Duplicated ERROR");
+            throw new DuplicatedException("loginId");
         }
 
         if (accountRepository.existsByEmail(account.getEmail())) {
-            throw new DuplicatedException("Email Duplicated ERROR");
+            throw new DuplicatedException("email");
         }
 
         Account newAccount = mapper.convertValue(account, Account.class);
