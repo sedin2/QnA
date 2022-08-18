@@ -7,6 +7,7 @@ import com.sedin.qna.account.model.dto.AccountSignUpDto;
 import com.sedin.qna.account.model.dto.AccountUpdateDto;
 import com.sedin.qna.account.model.response.AccountApiResponse;
 import com.sedin.qna.account.repository.AccountRepository;
+import com.sedin.qna.error.DuplicatedException;
 import com.sedin.qna.network.Header;
 import com.sedin.qna.util.JwtUtil;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,14 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Header<AccountApiResponse> signUp(AccountSignUpDto account) {
+        if (accountRepository.existsByLoginId(account.getLoginId())) {
+            throw new DuplicatedException("LoginId Duplicated ERROR");
+        }
+
+        if (accountRepository.existsByEmail(account.getEmail())) {
+            throw new DuplicatedException("Email Duplicated ERROR");
+        }
+
         Account newAccount = mapper.convertValue(account, Account.class);
         accountRepository.save(newAccount);
 
