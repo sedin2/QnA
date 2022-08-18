@@ -32,10 +32,11 @@ public class Header<T> {
                 .build();
     }
 
-    public static <T> Header<T> ERROR(String description) {
+    public static <T> Header<T> ERROR(String description, T data) {
         return (Header<T>) Header.builder()
                 .resultCode("ERROR")
                 .description(description)
+                .data(data)
                 .build();
     }
 }
