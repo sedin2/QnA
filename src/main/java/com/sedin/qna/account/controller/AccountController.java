@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("api/accounts")
 public class AccountController {
@@ -28,13 +30,13 @@ public class AccountController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Header<AccountApiResponse> signUp(@RequestBody AccountSignUpDto account) {
+    public Header<AccountApiResponse> signUp(@RequestBody @Valid AccountSignUpDto account) {
         return accountService.signUp(account);
     }
 
     @PatchMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Header<AccountApiResponse> update(@PathVariable Long id, @RequestBody AccountUpdateDto account) {
+    public Header<AccountApiResponse> update(@PathVariable Long id, @RequestBody @Valid AccountUpdateDto account) {
         return accountService.update(id, account);
     }
 
