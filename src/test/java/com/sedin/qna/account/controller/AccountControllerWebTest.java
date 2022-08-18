@@ -37,7 +37,6 @@ class AccountControllerWebTest {
     private static final String NAME = "LeeSeJin";
     private static final String SEX = "M";
     private static final String EMAIL = "sejin@email.com";
-    private static final String EXISTED_EMAIL = "sejin@email.com";
 
     @Autowired
     private MockMvc mockMvc;
@@ -133,6 +132,33 @@ class AccountControllerWebTest {
                         .andExpect(status().isBadRequest());
 
                 verify(accountService, times(1)).signUp(any(AccountSignUpDto.class));
+            }
+        }
+
+        @Nested
+        @DisplayName("비어있는 인자값으로 요청이 들어오면")
+        class ContextWithEmptyArgumentInAccountSignUpDto {
+
+            @Test
+            @DisplayName("HttpStatus 400 BadRequest를 응답한다")
+            void it_returns_httpStatus_badRequest() throws Exception {
+                accountSignUpDto = AccountSignUpDto.builder()
+                        .loginId("")
+                        .password(PASSWORD)
+                        .name(NAME)
+                        .bornDate(LocalDateTime.now())
+                        .sex(SEX)
+                        .email(EMAIL)
+                        .build();
+
+                String content = objectMapper.writeValueAsString(accountSignUpDto);
+
+                mockMvc.perform(post("/api/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(content))
+                        .andExpect(status().isBadRequest());
+
+                verify(accountService, times(0)).signUp(accountSignUpDto);
             }
         }
     }
