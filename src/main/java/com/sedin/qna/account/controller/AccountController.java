@@ -1,8 +1,8 @@
 package com.sedin.qna.account.controller;
 
-import com.sedin.qna.account.model.dto.AccountLoginDto;
-import com.sedin.qna.account.model.dto.AccountSignUpDto;
-import com.sedin.qna.account.model.dto.AccountUpdateDto;
+import com.sedin.qna.account.model.request.AccountLoginDto;
+import com.sedin.qna.account.model.request.AccountSignUpDto;
+import com.sedin.qna.account.model.request.AccountUpdateDto;
 import com.sedin.qna.account.model.response.AccountApiResponse;
 import com.sedin.qna.account.service.AccountService;
 import com.sedin.qna.network.Header;

@@ -1,10 +1,11 @@
 package com.sedin.qna.account.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sedin.qna.account.model.dto.AccountSignUpDto;
+import com.sedin.qna.account.model.request.AccountSignUpDto;
 import com.sedin.qna.account.model.response.AccountApiResponse;
 import com.sedin.qna.account.service.AccountService;
 import com.sedin.qna.error.DuplicatedException;
+import com.sedin.qna.error.NotFoundException;
 import com.sedin.qna.network.Header;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -21,8 +22,11 @@ import java.time.LocalDateTime;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -31,6 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AccountControllerWebTest {
 
     private static final Long EXISTED_ID = 1L;
+    private static final Long NOT_EXISTED_ID = 9999L;
     private static final String LOGIN_ID = "sedin";
     private static final String EXISTED_LOGIN_ID = "sedin";
     private static final String PASSWORD = "12341234";
@@ -167,11 +172,63 @@ class AccountControllerWebTest {
     @DisplayName("PATCH /api/accounts/{id} 는")
     class DescribeUpdateAccount {
 
+        @Nested
+        @DisplayName("존재하는 accountId와 정보로 요청이 들어오면")
+        class ContextWithExistedAccountIdAndAccountUpdateDto {
+
+        }
+
+        @Nested
+        @DisplayName("존재하는 accountId와 유효하지 않은 정보로 요청이 들어오면")
+        class ContextWithExistedAccountIdAndInvalidAccountUpdateDto {
+
+        }
+
+        @Nested
+        @DisplayName("존재하지 않은 accountId로 요청이 들어오면")
+        class ContextWithNotExistedAccountId {
+
+        }
     }
 
     @Nested
     @DisplayName("DELETE /api/accounts/{id} 는")
     class DescribeDeleteAccount {
 
+        @Nested
+        @DisplayName("존재하는 accountId로 요청이 들어오면")
+        class ContextWithExistedAccountId {
+
+            @BeforeEach
+            void prepareExistedAccountId() {
+                doNothing().when(accountService).delete(EXISTED_ID);
+            }
+
+            @Test
+            @DisplayName("HttpStatus 204 No Content를 응답한다")
+            void it_returns_httpStatus_noContent() throws Exception {
+                mockMvc.perform(delete("/api/accounts/" + EXISTED_ID))
+                        .andExpect(status().isNoContent());
+
+                verify(accountService, times(1)).delete(EXISTED_ID);
+            }
+        }
+
+        @Nested
+        @DisplayName("존재하지 않은 accountId로 요청이 들어오면")
+        class ContextWithNotExistedAccountId {
+
+            @BeforeEach
+            void prepareNotExistedAccountId() {
+                doThrow(new NotFoundException("accountId")).when(accountService).delete(NOT_EXISTED_ID);
+            }
+
+            @Test
+            @DisplayName("HttpStatus 400 BadRequest를 응답한다")
+            void it_returns_httpStatus_badRequest() throws Exception {
+                mockMvc.perform(delete("/api/accounts/" + NOT_EXISTED_ID))
+                        .andExpect(status().isBadRequest());
+            }
+        }
     }
 }
