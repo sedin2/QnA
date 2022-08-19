@@ -90,11 +90,11 @@ class AccountControllerWebTest {
                         .email(EMAIL)
                         .build();
 
-                String content = objectMapper.writeValueAsString(accountSignUpDto);
+                String requestBody = objectMapper.writeValueAsString(accountSignUpDto);
 
                 mockMvc.perform(post("/api/accounts")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(content))
+                        .content(requestBody))
                         .andExpect(status().isCreated())
                         .andExpect(content().string(containsString(LOGIN_ID)));
 
@@ -124,11 +124,11 @@ class AccountControllerWebTest {
                         .email(EMAIL)
                         .build();
 
-                String content = objectMapper.writeValueAsString(accountSignUpDto);
+                String requestBody = objectMapper.writeValueAsString(accountSignUpDto);
 
                 mockMvc.perform(post("/api/accounts")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(content))
+                        .content(requestBody))
                         .andExpect(status().isBadRequest());
 
                 verify(accountService, times(1)).signUp(any(AccountSignUpDto.class));
@@ -151,11 +151,11 @@ class AccountControllerWebTest {
                         .email(EMAIL)
                         .build();
 
-                String content = objectMapper.writeValueAsString(accountSignUpDto);
+                String requestBody = objectMapper.writeValueAsString(accountSignUpDto);
 
                 mockMvc.perform(post("/api/accounts")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(content))
+                        .content(requestBody))
                         .andExpect(status().isBadRequest());
 
                 verify(accountService, times(0)).signUp(accountSignUpDto);
