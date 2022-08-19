@@ -2,6 +2,7 @@ package com.sedin.qna.account.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sedin.qna.account.model.request.AccountSignUpDto;
+import com.sedin.qna.account.model.request.AccountUpdateDto;
 import com.sedin.qna.account.model.response.AccountApiResponse;
 import com.sedin.qna.account.service.AccountService;
 import com.sedin.qna.error.DuplicatedException;
@@ -21,12 +22,14 @@ import java.time.LocalDateTime;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -36,6 +39,7 @@ class AccountControllerWebTest {
 
     private static final Long EXISTED_ID = 1L;
     private static final Long NOT_EXISTED_ID = 9999L;
+    private static final String PREFIX = "prefix";
     private static final String LOGIN_ID = "sedin";
     private static final String EXISTED_LOGIN_ID = "sedin";
     private static final String PASSWORD = "12341234";
@@ -53,6 +57,7 @@ class AccountControllerWebTest {
     private AccountService accountService;
 
     private AccountSignUpDto accountSignUpDto;
+    private AccountUpdateDto accountUpdateDto;
     private Header<AccountApiResponse> response;
 
     @BeforeEach
@@ -79,13 +84,6 @@ class AccountControllerWebTest {
 
             @BeforeEach
             void prepareAccountSignUpDto() {
-                given(accountService.signUp(any(AccountSignUpDto.class)))
-                        .willReturn(response);
-            }
-
-            @Test
-            @DisplayName("HttpStatus 201 Created를 응답한다")
-            void it_returns_httpStatus_created() throws Exception {
                 accountSignUpDto = AccountSignUpDto.builder()
                         .loginId(LOGIN_ID)
                         .password(PASSWORD)
@@ -95,6 +93,13 @@ class AccountControllerWebTest {
                         .email(EMAIL)
                         .build();
 
+                given(accountService.signUp(any(AccountSignUpDto.class)))
+                        .willReturn(response);
+            }
+
+            @Test
+            @DisplayName("HttpStatus 201 Created를 응답한다")
+            void it_returns_httpStatus_created() throws Exception {
                 String requestBody = objectMapper.writeValueAsString(accountSignUpDto);
 
                 mockMvc.perform(post("/api/accounts")
@@ -113,13 +118,6 @@ class AccountControllerWebTest {
 
             @BeforeEach
             void prepareRegisteredDto() {
-                given(accountService.signUp(any(AccountSignUpDto.class)))
-                        .willThrow(new DuplicatedException(EXISTED_LOGIN_ID));
-            }
-
-            @Test
-            @DisplayName("HttpStatus 400 BadRequest를 응답한다")
-            void it_returns_httpStatus_badRequest() throws Exception {
                 accountSignUpDto = AccountSignUpDto.builder()
                         .loginId(EXISTED_LOGIN_ID)
                         .password(PASSWORD)
@@ -129,6 +127,13 @@ class AccountControllerWebTest {
                         .email(EMAIL)
                         .build();
 
+                given(accountService.signUp(any(AccountSignUpDto.class)))
+                        .willThrow(new DuplicatedException(EXISTED_LOGIN_ID));
+            }
+
+            @Test
+            @DisplayName("HttpStatus 400 BadRequest를 응답한다")
+            void it_returns_httpStatus_badRequest() throws Exception {
                 String requestBody = objectMapper.writeValueAsString(accountSignUpDto);
 
                 mockMvc.perform(post("/api/accounts")
@@ -144,9 +149,8 @@ class AccountControllerWebTest {
         @DisplayName("비어있는 인자값으로 요청이 들어오면")
         class ContextWithEmptyArgumentInAccountSignUpDto {
 
-            @Test
-            @DisplayName("HttpStatus 400 BadRequest를 응답한다")
-            void it_returns_httpStatus_badRequest() throws Exception {
+            @BeforeEach
+            void prepareAccountSignUpDtoWithEmptyArgument() {
                 accountSignUpDto = AccountSignUpDto.builder()
                         .loginId("")
                         .password(PASSWORD)
@@ -155,7 +159,11 @@ class AccountControllerWebTest {
                         .sex(SEX)
                         .email(EMAIL)
                         .build();
+            }
 
+            @Test
+            @DisplayName("HttpStatus 400 BadRequest를 응답한다")
+            void it_returns_httpStatus_badRequest() throws Exception {
                 String requestBody = objectMapper.writeValueAsString(accountSignUpDto);
 
                 mockMvc.perform(post("/api/accounts")
@@ -163,7 +171,7 @@ class AccountControllerWebTest {
                         .content(requestBody))
                         .andExpect(status().isBadRequest());
 
-                verify(accountService, times(0)).signUp(accountSignUpDto);
+                verify(accountService, times(0)).signUp(any(AccountSignUpDto.class));
             }
         }
     }
@@ -176,18 +184,87 @@ class AccountControllerWebTest {
         @DisplayName("존재하는 accountId와 정보로 요청이 들어오면")
         class ContextWithExistedAccountIdAndAccountUpdateDto {
 
+            @BeforeEach
+            void prepareExistedAccountIdAndAccountUpdateDto() {
+                accountUpdateDto = AccountUpdateDto.builder()
+                        .originalPassword(PASSWORD)
+                        .newPassword(PREFIX + PASSWORD)
+                        .email(PREFIX + EMAIL)
+                        .build();
+
+                given(accountService.update(eq(EXISTED_ID), any(AccountUpdateDto.class))).willReturn(response);
+            }
+
+            @Test
+            @DisplayName("HttpStatus 200 OK를 응답한다")
+            void it_returns_httpStatus_OK() throws Exception {
+                String requestBody = objectMapper.writeValueAsString(accountUpdateDto);
+
+                mockMvc.perform(patch("/api/accounts/" + EXISTED_ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                        .andExpect(status().isOk());
+
+                verify(accountService, times(1)).update(eq(EXISTED_ID), any(AccountUpdateDto.class));
+            }
+
         }
 
         @Nested
         @DisplayName("존재하는 accountId와 유효하지 않은 정보로 요청이 들어오면")
         class ContextWithExistedAccountIdAndInvalidAccountUpdateDto {
 
+            @BeforeEach
+            void prepareInvalidAccountUpdateDto() {
+                accountUpdateDto = AccountUpdateDto.builder()
+                        .originalPassword("")
+                        .newPassword(PREFIX + PASSWORD)
+                        .email(PREFIX + EMAIL)
+                        .build();
+            }
+
+            @Test
+            @DisplayName("HttpStatus 400 Bad Request를 응답한다")
+            void it_returns_httpStatus_badRequest() throws Exception {
+                String requestBody = objectMapper.writeValueAsString(accountUpdateDto);
+
+                mockMvc.perform(patch("/api/accounts/" + EXISTED_ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                        .andExpect(status().isBadRequest());
+
+                verify(accountService, times(0)).update(eq(EXISTED_ID), any(AccountUpdateDto.class));
+            }
         }
 
         @Nested
         @DisplayName("존재하지 않은 accountId로 요청이 들어오면")
         class ContextWithNotExistedAccountId {
 
+            @BeforeEach
+            void prepareNotExistedAccountId() {
+                AccountUpdateDto accountUpdateDto = AccountUpdateDto.builder()
+                        .originalPassword(PASSWORD)
+                        .newPassword(PREFIX + PASSWORD)
+                        .email(PREFIX + EMAIL)
+                        .build();
+
+                given(accountService.update(eq(NOT_EXISTED_ID), any(AccountUpdateDto.class)))
+                        .willThrow(new NotFoundException("accountId"));
+            }
+
+            @Test
+            @DisplayName("HttpStatus 400 Bad Request를 응답한다")
+            void it_returns_httpStatus_badRequest() throws Exception {
+                String requestBody = objectMapper.writeValueAsString(accountUpdateDto);
+
+                mockMvc.perform(patch("/api/accounts/" + NOT_EXISTED_ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                        .andExpect(status().isBadRequest());
+
+                verify(accountService, times(0)).update(eq(NOT_EXISTED_ID), any(AccountUpdateDto.class));
+            }
         }
     }
 
@@ -228,6 +305,8 @@ class AccountControllerWebTest {
             void it_returns_httpStatus_badRequest() throws Exception {
                 mockMvc.perform(delete("/api/accounts/" + NOT_EXISTED_ID))
                         .andExpect(status().isBadRequest());
+
+                verify(accountService, times(1)).delete(NOT_EXISTED_ID);
             }
         }
     }
