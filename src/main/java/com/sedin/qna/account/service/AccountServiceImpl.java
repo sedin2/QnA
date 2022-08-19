@@ -2,12 +2,13 @@ package com.sedin.qna.account.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sedin.qna.account.model.Account;
-import com.sedin.qna.account.model.dto.AccountLoginDto;
-import com.sedin.qna.account.model.dto.AccountSignUpDto;
-import com.sedin.qna.account.model.dto.AccountUpdateDto;
+import com.sedin.qna.account.model.request.AccountLoginDto;
+import com.sedin.qna.account.model.request.AccountSignUpDto;
+import com.sedin.qna.account.model.request.AccountUpdateDto;
 import com.sedin.qna.account.model.response.AccountApiResponse;
 import com.sedin.qna.account.repository.AccountRepository;
 import com.sedin.qna.error.DuplicatedException;
+import com.sedin.qna.error.NotFoundException;
 import com.sedin.qna.network.Header;
 import com.sedin.qna.util.JwtUtil;
 import org.springframework.stereotype.Service;
@@ -57,9 +58,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Header<AccountApiResponse> update(Long id, AccountUpdateDto account) {
-        Account updateAccount = accountRepository.findByIdAndPassword(id, account.getOriginalPassword())
-                .orElseThrow(NoSuchElementException::new);
-
+        Account updateAccount = findAccount(id);
         updateAccount.updatePasswordAndEmail(account.getNewPassword(), account.getEmail());
 
         return response(updateAccount);
@@ -67,7 +66,13 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public void delete(Long id) {
-        accountRepository.deleteById(id);
+        Account account = findAccount(id);
+
+        accountRepository.delete(account);
+    }
+
+    private Account findAccount(Long id) {
+        return accountRepository.findById(id).orElseThrow(() -> new NotFoundException("accountId"));
     }
 
     private Header<String> response(String token) {

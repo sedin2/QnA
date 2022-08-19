@@ -1,4 +1,4 @@
-package com.sedin.qna.account.model.dto;
+package com.sedin.qna.account.model.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
