@@ -8,6 +8,7 @@ import com.sedin.qna.account.repository.AccountRepository;
 import com.sedin.qna.util.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -62,25 +63,88 @@ class AccountServiceTest {
                 .email(EMAIL)
                 .build();
 
-        when(objectMapper.convertValue(any(AccountSignUpDto.class), eq(Account.class))).thenReturn(account);
+//        when(objectMapper.convertValue(any(AccountSignUpDto.class), eq(Account.class))).thenReturn(account);
         given(accountRepository.save(any(Account.class))).willReturn(account);
     }
 
-    @Test
-    @DisplayName("AccountSignUpDto가 정상일 때")
-    void createAccount() {
-        AccountSignUpDto accountSignUpDto = AccountSignUpDto.builder()
-                .loginId(LOGIN_ID)
-                .password(PASSWORD)
-                .name(NAME)
-                .bornDate(LocalDateTime.now())
-                .sex(SEX)
-                .email(EMAIL)
-                .build();
+    @Nested
+    @DisplayName("signUp 메소드는")
+    class Describe_signUp {
 
-        AccountApiResponse accountApiResponse = accountService.signUp(accountSignUpDto).getData();
-        verify(accountRepository, times(1)).save(any(Account.class));
-        assertThat(accountApiResponse.getId()).isEqualTo(EXISTED_ID);
-        assertThat(accountApiResponse.getName()).isEqualTo(NAME);
+        @Nested
+        @DisplayName("유효한 사용자 등록 정보가 주어지면")
+        class Context_with_valid_accountSignUpDto {
+
+            @Test
+            @DisplayName("사용자를 등록하고 Account 정보를 담은 응답을 리턴한다")
+            void it_returns_response_with_new_account() {
+                assertThat(1L).isEqualTo(1L);
+            }
+        }
+
+        @Nested
+        @DisplayName("사용자 등록 정보에 이미 등록된 로그인 아이디 또는 이메일이 주어지면")
+        class Context_with_duplicated_loginId_or_email_in_accountSignUpDto {
+
+            @Test
+            @DisplayName("DuplicatedException 예외를 던진다")
+            void it_returns_duplicatedException() {
+                assertThat(1L).isEqualTo(1L);
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("update 메소드는")
+    class Describe_update {
+
+        @Nested
+        @DisplayName("만약 찾을 수 있는 accountId와 유효한 사용자 수정 정보가 주어지면")
+        class Context_with_found_accountId_and_valid_accountUpdateDto {
+
+            @Test
+            @DisplayName("사용자를 수정하고 Account 정보를 담은 응답을 리턴한다")
+            void it_returns_response_with_updated_account() {
+                assertThat(1L).isEqualTo(1L);
+            }
+        }
+
+        @Nested
+        @DisplayName("만약 찾을 수 없는 accountId가 주어지면")
+        class Context_with_not_found_accountId {
+
+            @Test
+            @DisplayName("NotFoundException 예외를 던진다")
+            void it_returns_notFoundException() {
+                assertThat(1L).isEqualTo(1L);
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("delete 메소드는")
+    class Describe_delete {
+
+        @Nested
+        @DisplayName("만약 찾을 수 있는 accountId가 주어지면")
+        class Context_with_found_accountId {
+
+            @Test
+            @DisplayName("사용자를 삭제한다")
+            void it_deletes_account() {
+                assertThat(1L).isEqualTo(1L);
+            }
+        }
+
+        @Nested
+        @DisplayName("만약 찾을 수 없는 accountId가 주어지면")
+        class Context_with_not_found_accountId {
+
+            @Test
+            @DisplayName("NotFoundException 예외를 던진다")
+            void it_returns_notFoundException() {
+                assertThat(1L).isEqualTo(1L);
+            }
+        }
     }
 }
