@@ -8,6 +8,7 @@ import com.sedin.qna.account.model.request.AccountUpdateDto;
 import com.sedin.qna.account.model.response.AccountApiResponse;
 import com.sedin.qna.account.repository.AccountRepository;
 import com.sedin.qna.error.DuplicatedException;
+import com.sedin.qna.error.NotFoundException;
 import com.sedin.qna.util.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -218,6 +219,11 @@ class AccountServiceTest {
     @DisplayName("만약 찾을 수 없는 accountId가 주어지면")
     class Context_with_not_found_accountId {
 
+        @BeforeEach
+        void prepareNotFoundAccountId() {
+            given(accountRepository.findById(NOT_EXISTED_ID)).willThrow(NotFoundException.class);
+        }
+
         @Nested
         @DisplayName("update 메소드는")
         class Describe_update {
@@ -225,7 +231,11 @@ class AccountServiceTest {
             @Test
             @DisplayName("NotFoundException 예외를 던진다")
             void it_returns_notFoundException() {
-                assertThat(1L).isEqualTo(1L);
+                assertThatThrownBy(() -> accountService.update(NOT_EXISTED_ID, accountUpdateDto))
+                        .isExactlyInstanceOf(NotFoundException.class);
+
+                verify(accountRepository, times(1)).findById(any(Long.class));
+                verify(accountRepository, never()).save(any(Account.class));
             }
         }
 
@@ -236,7 +246,11 @@ class AccountServiceTest {
             @Test
             @DisplayName("NotFoundException 예외를 던진다")
             void it_returns_notFoundException() {
-                assertThat(1L).isEqualTo(1L);
+                assertThatThrownBy(() -> accountService.delete(NOT_EXISTED_ID))
+                        .isExactlyInstanceOf(NotFoundException.class);
+
+                verify(accountRepository, times(1)).findById(any(Long.class));
+                verify(accountRepository, never()).delete(any(Account.class));
             }
         }
     }
