@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.sedin.qna.account.model.Account;
 import com.sedin.qna.account.model.request.AccountSignUpDto;
+import com.sedin.qna.account.model.request.AccountUpdateDto;
 import com.sedin.qna.account.model.response.AccountApiResponse;
 import com.sedin.qna.account.repository.AccountRepository;
 import com.sedin.qna.error.DuplicatedException;
@@ -17,11 +18,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -36,23 +39,24 @@ class AccountServiceTest {
     private static final String LOGIN_ID = "sedin";
     private static final String EXISTED_LOGIN_ID = "existed";
     private static final String PASSWORD = "12341234";
+    private static final String NEW_PASSWORD = "newPassword";
     private static final String NAME = "LeeSeJin";
     private static final String MALE = "M";
     private static final String EMAIL = "sejin@email.com";
+    private static final String NEW_EMAIL = "new@email.com";
     private static final String EXISTED_EMAIL = "existed@email.com";
 
-    //    @Mock
     private ObjectMapper objectMapper;
-
-    private AccountService accountService;
 
     @MockBean
     private AccountRepository accountRepository = mock(AccountRepository.class);
 
+    private AccountService accountService;
+
     private Account account;
     private AccountSignUpDto accountSignUpDto;
+    private AccountUpdateDto accountUpdateDto;
     private AccountSignUpDto duplicatedDto;
-    private AccountApiResponse accountApiResponse;
 
     @BeforeEach
     void prepare() {
@@ -68,15 +72,6 @@ class AccountServiceTest {
                 .bornDate(LocalDateTime.now())
                 .sex(MALE)
                 .email(EMAIL)
-                .build();
-
-        accountApiResponse = AccountApiResponse.builder()
-                .id(account.getId())
-                .loginId(account.getLoginId())
-                .name(account.getName())
-                .bornDate(account.getBornDate())
-                .sex(account.getSex())
-                .email(account.getEmail())
                 .build();
     }
 
@@ -175,6 +170,23 @@ class AccountServiceTest {
     @DisplayName("만약 찾을 수 있는 accountId가 주어지면")
     class Context_with_found_accountId {
 
+        @BeforeEach
+        void prepareFoundAccount() {
+            accountUpdateDto = AccountUpdateDto.builder()
+                    .originalPassword(PASSWORD)
+                    .newPassword(NEW_PASSWORD)
+                    .email(NEW_EMAIL)
+                    .build();
+
+            account = Account.builder()
+                    .password(NEW_PASSWORD)
+                    .email(NEW_EMAIL)
+                    .build();
+
+            given(accountRepository.findById(EXISTED_ID)).willReturn(Optional.of(account));
+            doNothing().when(accountRepository).delete(account);
+        }
+
         @Nested
         @DisplayName("update 메소드는")
         class Describe_update {
@@ -182,7 +194,10 @@ class AccountServiceTest {
             @Test
             @DisplayName("사용자를 수정하고 Account 정보를 담은 응답을 리턴한다")
             void it_returns_response_with_updated_account() {
-                assertThat(1L).isEqualTo(1L);
+                AccountApiResponse response = accountService.update(EXISTED_ID, accountUpdateDto).getData();
+
+                assertThat(response.getEmail()).isEqualTo(NEW_EMAIL);
+                verify(accountRepository, times(1)).findById(any(Long.class));
             }
         }
 
@@ -193,7 +208,8 @@ class AccountServiceTest {
             @Test
             @DisplayName("사용자를 삭제한다")
             void it_deletes_account() {
-                assertThat(1L).isEqualTo(1L);
+                accountService.delete(EXISTED_ID);
+                verify(accountRepository, times(1)).delete(any(Account.class));
             }
         }
     }
