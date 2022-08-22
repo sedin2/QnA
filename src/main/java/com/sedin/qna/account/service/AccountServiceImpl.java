@@ -41,9 +41,8 @@ public class AccountServiceImpl implements AccountService {
         }
 
         Account newAccount = mapper.convertValue(account, Account.class);
-        accountRepository.save(newAccount);
 
-        return response(newAccount);
+        return response(accountRepository.save(newAccount));
     }
 
     @Override
