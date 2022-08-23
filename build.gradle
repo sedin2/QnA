@@ -1,4 +1,7 @@
 plugins {
+    // Asciidoctor
+    id "org.asciidoctor.jvm.convert" version "3.3.2"
+
     id 'org.springframework.boot' version '2.7.1'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
@@ -12,6 +15,7 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+    asciidoctorExt
 }
 
 repositories {
@@ -35,8 +39,26 @@ dependencies {
             'io.jsonwebtoken:jjwt-jackson:0.11.5'
     compile 'org.apache.commons:commons-lang3:3.12.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // Asciidoctor Extension
+    asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor:2.0.6.RELEASE'
+    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc:2.0.6.RELEASE'
+}
+
+ext {
+    snippetsDir = file('build/generated-snippets')
+}
+
+test {
+    outputs.dir snippetsDir
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+asciidoctor {
+    inputs.dir snippetsDir
+    configurations 'asciidoctorExt'
+    dependsOn test
 }
