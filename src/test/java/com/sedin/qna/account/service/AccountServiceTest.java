@@ -125,7 +125,7 @@ class AccountServiceTest {
                         .email(EMAIL)
                         .build();
 
-                given(accountRepository.existsByLoginId(EXISTED_LOGIN_ID)).willThrow(DuplicatedException.class);
+                given(accountRepository.existsByLoginId(EXISTED_LOGIN_ID)).willReturn(true);
             }
 
             @Test
@@ -153,7 +153,7 @@ class AccountServiceTest {
                         .email(EXISTED_EMAIL)
                         .build();
 
-                given(accountRepository.existsByEmail(EXISTED_EMAIL)).willThrow(DuplicatedException.class);
+                given(accountRepository.existsByEmail(EXISTED_EMAIL)).willReturn(true);
             }
 
             @Test
@@ -218,11 +218,6 @@ class AccountServiceTest {
     @Nested
     @DisplayName("만약 찾을 수 없는 accountId가 주어지면")
     class Context_with_not_found_accountId {
-
-        @BeforeEach
-        void prepareNotFoundAccountId() {
-            given(accountRepository.findById(NOT_EXISTED_ID)).willThrow(NotFoundException.class);
-        }
 
         @Nested
         @DisplayName("update 메소드는")
