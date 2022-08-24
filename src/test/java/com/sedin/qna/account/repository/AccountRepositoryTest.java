@@ -1,6 +1,7 @@
 package com.sedin.qna.account.repository;
 
 import com.sedin.qna.account.model.Account;
+import com.sedin.qna.account.model.Gender;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,7 +22,7 @@ class AccountRepositoryTest {
     private static final String LOGIN_ID = "sedin";
     private static final String PASSWORD = "12341234";
     private static final String NAME = "LeeSeJin";
-    private static final String MALE = "M";
+    private static final LocalDate BORN_DATE = LocalDate.of(1994, 8, 30);
     private static final String EMAIL = "sejin@email.com";
 
     @Autowired
@@ -34,8 +36,8 @@ class AccountRepositoryTest {
                 .loginId(LOGIN_ID)
                 .password(PASSWORD)
                 .name(NAME)
-                .bornDate(LocalDateTime.now())
-                .sex(MALE)
+                .bornDate(BORN_DATE)
+                .gender(Gender.MALE)
                 .email(EMAIL)
                 .build();
     }
