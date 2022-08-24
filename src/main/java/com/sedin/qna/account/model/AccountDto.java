@@ -17,7 +17,6 @@ import java.util.List;
 public class AccountDto {
 
     @Getter
-    @Setter
     public static class Create {
 
         @NotBlank
@@ -34,6 +33,21 @@ public class AccountDto {
         @NotBlank
         private String email;
 
+        private Create() {
+
+        }
+
+        @Builder
+        private Create(@NotBlank String loginId, @NotBlank String password, @NotBlank String name,
+                       LocalDate bornDate, @NotNull Gender gender, @Email @NotBlank String email) {
+            this.loginId = loginId;
+            this.password = password;
+            this.name = name;
+            this.bornDate = bornDate;
+            this.gender = gender;
+            this.email = email;
+        }
+
         public Account toEntity() {
             return Account.builder()
                     .loginId(loginId)
@@ -47,7 +61,6 @@ public class AccountDto {
     }
 
     @Getter
-    @Setter
     public static class Update {
 
         @NotBlank
@@ -58,13 +71,23 @@ public class AccountDto {
         @NotBlank
         private String email;
 
+        private Update() {
+
+        }
+
+        @Builder
+        private Update(@NotBlank String originalPassword, @NotBlank String newPassword, @Email @NotBlank String email) {
+            this.originalPassword = originalPassword;
+            this.newPassword = newPassword;
+            this.email = email;
+        }
+
         public Account complete(Account account) {
             return account.updatePasswordAndEmail(newPassword, email);
         }
     }
 
     @Getter
-    @Setter
     public static class Response {
 
         private Long id;
