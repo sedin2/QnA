@@ -1,23 +1,23 @@
 package com.sedin.qna.account.model;
 
-import lombok.AllArgsConstructor;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
-@Table(name = "Account")
 @Getter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@Table(name = "Account")
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Account {
 
     @Id
@@ -35,16 +35,30 @@ public class Account {
     private String name;
 
     @Column(name = "born_date", nullable = false)
-    private LocalDateTime bornDate;
+    private LocalDate bornDate;
 
-    @Column(nullable = false, length = 2)
-    private String sex;
+    @Column(nullable = false)
+    @Enumerated(value = EnumType.STRING)
+    private Gender gender;
 
     @Column(unique = true, nullable = false, length = 45)
     private String email;
 
-    public void updatePasswordAndEmail(String newPassword, String email) {
-        this.password = newPassword;
+    @Builder
+    private Account(String loginId, String password, String name, LocalDate bornDate, Gender gender, String email) {
+        this.loginId = loginId;
+        this.password = password;
+        this.name = name;
+        this.bornDate = bornDate;
+        this.gender = gender;
         this.email = email;
     }
+
+    public Account updatePasswordAndEmail(String newPassword, String email) {
+        this.password = newPassword;
+        this.email = email;
+
+        return this;
+    }
 }
+

@@ -1,6 +1,6 @@
 package com.sedin.qna.util;
 
-import com.sedin.qna.error.InvalidTokenException;
+import com.sedin.qna.exception.InvalidTokenException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;

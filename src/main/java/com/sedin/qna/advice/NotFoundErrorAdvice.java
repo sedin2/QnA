@@ -1,8 +1,8 @@
-package com.sedin.qna.common;
+package com.sedin.qna.advice;
 
-import com.sedin.qna.error.DuplicatedException;
-import com.sedin.qna.error.NotFoundException;
-import com.sedin.qna.network.Header;
+import com.sedin.qna.exception.NotFoundException;
+import com.sedin.qna.network.ApiResponseCode;
+import com.sedin.qna.network.ApiResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -27,10 +27,10 @@ public class NotFoundErrorAdvice {
      */
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(NotFoundException.class)
-    public Header<Map<String, String>> handleAccountNotFound(NotFoundException exception) {
+    public ApiResponseDto<Map<String, String>> handleAccountNotFound(NotFoundException exception) {
         Map<String, String> errorMap = new HashMap<>();
         errorMap.put(exception.getMessage(), ERROR_MESSAGE);
 
-        return Header.ERROR(ERROR_MESSAGE, errorMap);
+        return ApiResponseDto.ERROR(ApiResponseCode.NOT_FOUND, errorMap);
     }
 }
