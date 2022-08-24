@@ -1,7 +1,8 @@
-package com.sedin.qna.common;
+package com.sedin.qna.advice;
 
-import com.sedin.qna.error.DuplicatedException;
-import com.sedin.qna.network.Header;
+import com.sedin.qna.exception.DuplicatedException;
+import com.sedin.qna.network.ApiResponseCode;
+import com.sedin.qna.network.ApiResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -26,10 +27,10 @@ public class DuplicatedErrorAdvice {
      */
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(DuplicatedException.class)
-    public Header<Map<String, String>> handleAccountAlreadyExisted(DuplicatedException exception) {
+    public ApiResponseDto<Map<String, String>> handleAccountAlreadyExisted(DuplicatedException exception) {
         Map<String, String> errorMap = new HashMap<>();
         errorMap.put(exception.getMessage(), ERROR_MESSAGE);
 
-        return Header.ERROR(ERROR_MESSAGE, errorMap);
+        return ApiResponseDto.ERROR(ApiResponseCode.DUPLICATED_ERROR, errorMap);
     }
 }

@@ -1,11 +1,8 @@
 package com.sedin.qna.account.controller;
 
-import com.sedin.qna.account.model.request.AccountLoginDto;
-import com.sedin.qna.account.model.request.AccountSignUpDto;
-import com.sedin.qna.account.model.request.AccountUpdateDto;
-import com.sedin.qna.account.model.response.AccountApiResponse;
+import com.sedin.qna.account.model.AccountDto;
 import com.sedin.qna.account.service.AccountService;
-import com.sedin.qna.network.Header;
+import com.sedin.qna.network.ApiResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -30,25 +27,21 @@ public class AccountController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Header<AccountApiResponse> signUp(@RequestBody @Valid AccountSignUpDto account) {
-        return accountService.signUp(account);
+    public ApiResponseDto<AccountDto.ResponseOne> signUp(@RequestBody @Valid AccountDto.Create create) {
+        return ApiResponseDto.OK(new AccountDto.ResponseOne(accountService.signUp(create)));
     }
 
     @PatchMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Header<AccountApiResponse> update(@PathVariable Long id, @RequestBody @Valid AccountUpdateDto account) {
-        return accountService.update(id, account);
+    public ApiResponseDto<AccountDto.ResponseOne> update(@PathVariable Long id,
+                                                         @RequestBody @Valid AccountDto.Update update) {
+        return ApiResponseDto.OK(new AccountDto.ResponseOne(accountService.update(id, update)));
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id) {
-        accountService.delete(id);
-    }
-
-    @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
-    public Header<String> login(@RequestBody AccountLoginDto account) {
-        return accountService.login(account);
+    public ApiResponseDto<String> delete(@PathVariable Long id) {
+        accountService.delete(id);
+        return ApiResponseDto.DEFAULT_OK;
     }
 }

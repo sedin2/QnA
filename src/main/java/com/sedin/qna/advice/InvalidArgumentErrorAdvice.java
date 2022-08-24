@@ -1,6 +1,7 @@
-package com.sedin.qna.common;
+package com.sedin.qna.advice;
 
-import com.sedin.qna.network.Header;
+import com.sedin.qna.network.ApiResponseCode;
+import com.sedin.qna.network.ApiResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -18,8 +19,6 @@ import java.util.Map;
 @RestControllerAdvice
 public class InvalidArgumentErrorAdvice {
 
-    private static final String ERROR_MESSAGE = "Argument Not Valid";
-
     /**
      * 요청 한 메소드의 인자값이 유효하지 않을 때 에러 메세지를 리턴합니다.
      *
@@ -32,7 +31,7 @@ public class InvalidArgumentErrorAdvice {
      */
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Header<Map<String, String>> handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
+    public ApiResponseDto<Map<String, String>> handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
         BindingResult bindingResult = exception.getBindingResult();
         Map<String, String> errorMap = new HashMap<>();
 
@@ -40,6 +39,6 @@ public class InvalidArgumentErrorAdvice {
             errorMap.put(fieldError.getField(), fieldError.getDefaultMessage());
         }
 
-        return Header.ERROR(ERROR_MESSAGE, errorMap);
+        return ApiResponseDto.ERROR(ApiResponseCode.BAD_PARAMETER, errorMap);
     }
 }
