@@ -1,13 +1,11 @@
 package com.sedin.qna.account.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sedin.qna.account.model.request.AccountSignUpDto;
-import com.sedin.qna.account.model.request.AccountUpdateDto;
-import com.sedin.qna.account.model.response.AccountApiResponse;
+import com.sedin.qna.account.model.AccountDto;
+import com.sedin.qna.account.model.Gender;
 import com.sedin.qna.account.service.AccountService;
-import com.sedin.qna.error.DuplicatedException;
-import com.sedin.qna.error.NotFoundException;
-import com.sedin.qna.network.Header;
+import com.sedin.qna.exception.DuplicatedException;
+import com.sedin.qna.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -23,11 +21,12 @@ import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import static com.sedin.qna.util.ApiDocumentUtil.getDocumentRequest;
 import static com.sedin.qna.util.ApiDocumentUtil.getDocumentResponse;
@@ -37,6 +36,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -62,7 +62,7 @@ class AccountControllerWebTest {
     private static final String EXISTED_LOGIN_ID = "sedin";
     private static final String PASSWORD = "12341234";
     private static final String NAME = "LeeSeJin";
-    private static final String SEX = "M";
+    private static final LocalDate BORN_DATE = LocalDate.of(1994, 8, 30);
     private static final String EMAIL = "sejin@email.com";
 
     @Autowired
@@ -76,25 +76,18 @@ class AccountControllerWebTest {
     @MockBean
     private AccountService accountService;
 
-    private AccountSignUpDto accountSignUpDto;
-    private AccountUpdateDto accountUpdateDto;
-    private Header<AccountApiResponse> response;
+    private AccountDto.Create createDto;
+    private AccountDto.Create registeredDto;
+    private AccountDto.Create createDtoWithEmptyArgument;
+    private AccountDto.Update updateDto;
+    private AccountDto.Update updateDtoWithEmptyArgument;
+    private AccountDto.Response response;
 
     @BeforeEach
     void setUp(RestDocumentationContextProvider restDocumentation) {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(context)
-                .apply(documentationConfiguration(restDocumentation)).build();
-
-        AccountApiResponse accountApiResponse = AccountApiResponse.builder()
-                .id(EXISTED_ID)
-                .loginId(LOGIN_ID)
-                .name(NAME)
-                .bornDate(LocalDateTime.now())
-                .sex(SEX)
-                .email(EMAIL)
+                .apply(documentationConfiguration(restDocumentation))
                 .build();
-
-        response = Header.OK(accountApiResponse);
     }
 
     @Nested
@@ -103,27 +96,36 @@ class AccountControllerWebTest {
 
         @Nested
         @DisplayName("사용자 등록 요청이 들어오면")
-        class ContextWithAccountSignUpDto {
+        class ContextWithAccountCreateDto {
 
             @BeforeEach
-            void prepareAccountSignUpDto() {
-                accountSignUpDto = AccountSignUpDto.builder()
+            void prepareCreate() {
+                createDto = AccountDto.Create.builder()
                         .loginId(LOGIN_ID)
                         .password(PASSWORD)
                         .name(NAME)
-                        .bornDate(LocalDateTime.now())
-                        .sex(SEX)
+                        .bornDate(BORN_DATE)
+                        .gender(Gender.MALE)
                         .email(EMAIL)
                         .build();
 
-                given(accountService.signUp(any(AccountSignUpDto.class)))
+                response = AccountDto.Response.builder()
+                        .id(EXISTED_ID)
+                        .loginId(LOGIN_ID)
+                        .name(NAME)
+                        .bornDate(BORN_DATE)
+                        .gender(Gender.MALE)
+                        .email(EMAIL)
+                        .build();
+
+                given(accountService.signUp(any(AccountDto.Create.class)))
                         .willReturn(response);
             }
 
             @Test
             @DisplayName("HttpStatus 201 Created를 응답한다")
             void it_returns_httpStatus_created() throws Exception {
-                String requestBody = objectMapper.writeValueAsString(accountSignUpDto);
+                String requestBody = objectMapper.writeValueAsString(createDto);
 
                 ResultActions result = mockMvc.perform(post("/api/accounts")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -133,6 +135,7 @@ class AccountControllerWebTest {
 
                 result.andExpect(status().isCreated())
                         .andExpect(content().string(containsString(LOGIN_ID)))
+                        .andDo(MockMvcResultHandlers.print())
                         .andDo(document("create-account",
                                 getDocumentRequest(),
                                 getDocumentResponse(),
@@ -141,21 +144,21 @@ class AccountControllerWebTest {
                                         fieldWithPath("password").type(JsonFieldType.STRING).description("비밀번호"),
                                         fieldWithPath("name").type(JsonFieldType.STRING).description("이름"),
                                         fieldWithPath("bornDate").type(JsonFieldType.STRING).description("생년월일"),
-                                        fieldWithPath("sex").type(JsonFieldType.STRING).description("성별"),
+                                        fieldWithPath("gender").type(JsonFieldType.STRING).description("성별"),
                                         fieldWithPath("email").type(JsonFieldType.STRING).description("이메일")
                                 ),
                                 responseFields(
-                                        fieldWithPath("resultCode").type(JsonFieldType.STRING).description("응답 코드"),
-                                        fieldWithPath("description").type(JsonFieldType.STRING).description("상태 설명"),
-                                        fieldWithPath("data.id").type(JsonFieldType.NUMBER).description("사용자 id"),
-                                        fieldWithPath("data.loginId").type(JsonFieldType.STRING).description("사용자 로그인 id"),
-                                        fieldWithPath("data.name").type(JsonFieldType.STRING).description("사용자 이름"),
-                                        fieldWithPath("data.bornDate").type(JsonFieldType.STRING).description("사용자 생년월일"),
-                                        fieldWithPath("data.sex").type(JsonFieldType.STRING).description("사용자 성별"),
-                                        fieldWithPath("data.email").type(JsonFieldType.STRING).description("사용자 이메일")
+                                        fieldWithPath("code").type(JsonFieldType.STRING).description("결과 코드"),
+                                        fieldWithPath("message").type(JsonFieldType.STRING).description("결과 메세지"),
+                                        fieldWithPath("data.account.id").type(JsonFieldType.NUMBER).description("아이디"),
+                                        fieldWithPath("data.account.loginId").type(JsonFieldType.STRING).description("로그인 아이디"),
+                                        fieldWithPath("data.account.name").type(JsonFieldType.STRING).description("이름"),
+                                        fieldWithPath("data.account.bornDate").type(JsonFieldType.STRING).description("생년월일"),
+                                        fieldWithPath("data.account.gender").type(JsonFieldType.STRING).description("성별"),
+                                        fieldWithPath("data.account.email").type(JsonFieldType.STRING).description("이메일")
                                 )));
 
-                verify(accountService).signUp(any(AccountSignUpDto.class));
+                verify(accountService, times(1)).signUp(any(AccountDto.Create.class));
             }
         }
 
@@ -165,23 +168,23 @@ class AccountControllerWebTest {
 
             @BeforeEach
             void prepareRegisteredDto() {
-                accountSignUpDto = AccountSignUpDto.builder()
+                registeredDto = AccountDto.Create.builder()
                         .loginId(EXISTED_LOGIN_ID)
                         .password(PASSWORD)
                         .name(NAME)
-                        .bornDate(LocalDateTime.now())
-                        .sex(SEX)
+                        .bornDate(BORN_DATE)
+                        .gender(Gender.MALE)
                         .email(EMAIL)
                         .build();
 
-                given(accountService.signUp(any(AccountSignUpDto.class)))
+                given(accountService.signUp(any(AccountDto.Create.class)))
                         .willThrow(new DuplicatedException(EXISTED_LOGIN_ID));
             }
 
             @Test
             @DisplayName("HttpStatus 400 BadRequest를 응답한다")
             void it_returns_httpStatus_badRequest() throws Exception {
-                String requestBody = objectMapper.writeValueAsString(accountSignUpDto);
+                String requestBody = objectMapper.writeValueAsString(registeredDto);
 
                 mockMvc.perform(post("/api/accounts")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -189,22 +192,22 @@ class AccountControllerWebTest {
                         .content(requestBody))
                         .andExpect(status().isBadRequest());
 
-                verify(accountService, times(1)).signUp(any(AccountSignUpDto.class));
+                verify(accountService, times(1)).signUp(any(AccountDto.Create.class));
             }
         }
 
         @Nested
         @DisplayName("비어있는 인자값으로 요청이 들어오면")
-        class ContextWithEmptyArgumentInAccountSignUpDto {
+        class ContextWithEmptyArgumentInAccountCreateDto {
 
             @BeforeEach
             void prepareAccountSignUpDtoWithEmptyArgument() {
-                accountSignUpDto = AccountSignUpDto.builder()
+                createDtoWithEmptyArgument = AccountDto.Create.builder()
                         .loginId("")
                         .password(PASSWORD)
                         .name(NAME)
-                        .bornDate(LocalDateTime.now())
-                        .sex(SEX)
+                        .bornDate(BORN_DATE)
+                        .gender(Gender.MALE)
                         .email(EMAIL)
                         .build();
             }
@@ -212,7 +215,7 @@ class AccountControllerWebTest {
             @Test
             @DisplayName("HttpStatus 400 BadRequest를 응답한다")
             void it_returns_httpStatus_badRequest() throws Exception {
-                String requestBody = objectMapper.writeValueAsString(accountSignUpDto);
+                String requestBody = objectMapper.writeValueAsString(createDtoWithEmptyArgument);
 
                 mockMvc.perform(post("/api/accounts")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -220,7 +223,7 @@ class AccountControllerWebTest {
                         .content(requestBody))
                         .andExpect(status().isBadRequest());
 
-                verify(accountService, times(0)).signUp(any(AccountSignUpDto.class));
+                verify(accountService, never()).signUp(any(AccountDto.Create.class));
             }
         }
     }
@@ -235,27 +238,37 @@ class AccountControllerWebTest {
 
             @BeforeEach
             void prepareExistedAccountIdAndAccountUpdateDto() {
-                accountUpdateDto = AccountUpdateDto.builder()
+                updateDto = AccountDto.Update.builder()
                         .originalPassword(PASSWORD)
                         .newPassword(PREFIX + PASSWORD)
                         .email(PREFIX + EMAIL)
                         .build();
 
-                given(accountService.update(eq(EXISTED_ID), any(AccountUpdateDto.class))).willReturn(response);
+                response = AccountDto.Response.builder()
+                        .id(EXISTED_ID)
+                        .loginId(LOGIN_ID)
+                        .name(NAME)
+                        .bornDate(BORN_DATE)
+                        .gender(Gender.MALE)
+                        .email(PREFIX + EMAIL)
+                        .build();
+
+                given(accountService.update(eq(EXISTED_ID), any(AccountDto.Update.class))).willReturn(response);
             }
 
             @Test
             @DisplayName("HttpStatus 200 OK를 응답한다")
             void it_returns_httpStatus_OK() throws Exception {
-                String requestBody = objectMapper.writeValueAsString(accountUpdateDto);
+                String requestBody = objectMapper.writeValueAsString(updateDto);
 
                 mockMvc.perform(patch("/api/accounts/" + EXISTED_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .content(requestBody))
-                        .andExpect(status().isOk());
+                        .andExpect(status().isOk())
+                        .andDo(MockMvcResultHandlers.print());
 
-                verify(accountService, times(1)).update(eq(EXISTED_ID), any(AccountUpdateDto.class));
+                verify(accountService, times(1)).update(eq(EXISTED_ID), any(AccountDto.Update.class));
             }
 
         }
@@ -266,7 +279,7 @@ class AccountControllerWebTest {
 
             @BeforeEach
             void prepareInvalidAccountUpdateDto() {
-                accountUpdateDto = AccountUpdateDto.builder()
+                updateDtoWithEmptyArgument = AccountDto.Update.builder()
                         .originalPassword("")
                         .newPassword(PREFIX + PASSWORD)
                         .email(PREFIX + EMAIL)
@@ -276,7 +289,7 @@ class AccountControllerWebTest {
             @Test
             @DisplayName("HttpStatus 400 Bad Request를 응답한다")
             void it_returns_httpStatus_badRequest() throws Exception {
-                String requestBody = objectMapper.writeValueAsString(accountUpdateDto);
+                String requestBody = objectMapper.writeValueAsString(updateDtoWithEmptyArgument);
 
                 mockMvc.perform(patch("/api/accounts/" + EXISTED_ID)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -284,8 +297,8 @@ class AccountControllerWebTest {
                         .content(requestBody))
                         .andExpect(status().isBadRequest());
 
-                verify(accountService, times(0))
-                        .update(eq(EXISTED_ID), any(AccountUpdateDto.class));
+                verify(accountService, never())
+                        .update(eq(EXISTED_ID), any(AccountDto.Update.class));
             }
         }
 
@@ -295,21 +308,20 @@ class AccountControllerWebTest {
 
             @BeforeEach
             void prepareNotExistedAccountId() {
-                accountUpdateDto = AccountUpdateDto.builder()
+                updateDto = AccountDto.Update.builder()
                         .originalPassword(PASSWORD)
                         .newPassword(PREFIX + PASSWORD)
                         .email(PREFIX + EMAIL)
                         .build();
 
-                given(accountService.update(eq(NOT_EXISTED_ID), any(AccountUpdateDto.class)))
+                given(accountService.update(eq(NOT_EXISTED_ID), any(AccountDto.Update.class)))
                         .willThrow(new NotFoundException("accountId"));
             }
 
             @Test
             @DisplayName("HttpStatus 400 Bad Request를 응답한다")
             void it_returns_httpStatus_badRequest() throws Exception {
-                String requestBody = objectMapper.writeValueAsString(accountUpdateDto);
-                System.out.println(requestBody);
+                String requestBody = objectMapper.writeValueAsString(updateDto);
 
                 mockMvc.perform(patch("/api/accounts/" + NOT_EXISTED_ID)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -318,7 +330,7 @@ class AccountControllerWebTest {
                         .andExpect(status().isBadRequest());
 
                 verify(accountService, times(1))
-                        .update(eq(NOT_EXISTED_ID), any(AccountUpdateDto.class));
+                        .update(eq(NOT_EXISTED_ID), any(AccountDto.Update.class));
             }
         }
     }
@@ -337,10 +349,10 @@ class AccountControllerWebTest {
             }
 
             @Test
-            @DisplayName("HttpStatus 204 No Content를 응답한다")
-            void it_returns_httpStatus_noContent() throws Exception {
+            @DisplayName("HttpStatus 200 OK를 응답한다")
+            void it_returns_httpStatus_OK() throws Exception {
                 mockMvc.perform(delete("/api/accounts/" + EXISTED_ID))
-                        .andExpect(status().isNoContent());
+                        .andExpect(status().isOk());
 
                 verify(accountService, times(1)).delete(EXISTED_ID);
             }

@@ -1,15 +1,11 @@
 package com.sedin.qna.account.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.sedin.qna.account.model.Account;
-import com.sedin.qna.account.model.request.AccountSignUpDto;
-import com.sedin.qna.account.model.request.AccountUpdateDto;
-import com.sedin.qna.account.model.response.AccountApiResponse;
+import com.sedin.qna.account.model.AccountDto;
+import com.sedin.qna.account.model.Gender;
 import com.sedin.qna.account.repository.AccountRepository;
-import com.sedin.qna.error.DuplicatedException;
-import com.sedin.qna.error.NotFoundException;
-import com.sedin.qna.util.JwtUtil;
+import com.sedin.qna.exception.DuplicatedException;
+import com.sedin.qna.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -18,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -34,7 +31,6 @@ import static org.mockito.Mockito.verify;
 @ExtendWith(MockitoExtension.class)
 class AccountServiceTest {
 
-    private static final String SECRET = "12345678901234567890123456789012";
     private static final Long EXISTED_ID = 1L;
     private static final Long NOT_EXISTED_ID = 9999L;
     private static final String LOGIN_ID = "sedin";
@@ -42,12 +38,10 @@ class AccountServiceTest {
     private static final String PASSWORD = "12341234";
     private static final String NEW_PASSWORD = "newPassword";
     private static final String NAME = "LeeSeJin";
-    private static final String MALE = "M";
+    private static final LocalDate BORN_DATE = LocalDate.of(1994, 8, 30);
     private static final String EMAIL = "sejin@email.com";
     private static final String NEW_EMAIL = "new@email.com";
     private static final String EXISTED_EMAIL = "existed@email.com";
-
-    private ObjectMapper objectMapper;
 
     @MockBean
     private AccountRepository accountRepository = mock(AccountRepository.class);
@@ -55,23 +49,21 @@ class AccountServiceTest {
     private AccountService accountService;
 
     private Account account;
-    private AccountSignUpDto accountSignUpDto;
-    private AccountUpdateDto accountUpdateDto;
-    private AccountSignUpDto duplicatedDto;
+    private AccountDto.Create createDto;
+    private AccountDto.Create duplicatedCreateDto;
+    private AccountDto.Update updateDto;
+    private AccountDto.Response response;
 
     @BeforeEach
     void prepare() {
-        JwtUtil jwtUtil = new JwtUtil(SECRET);
-        objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
-        accountService = new AccountServiceImpl(objectMapper, jwtUtil, accountRepository);
+        accountService = new AccountServiceImpl(accountRepository);
 
         account = Account.builder()
-                .id(EXISTED_ID)
                 .loginId(LOGIN_ID)
                 .password(PASSWORD)
                 .name(NAME)
-                .bornDate(LocalDateTime.now())
-                .sex(MALE)
+                .bornDate(BORN_DATE)
+                .gender(Gender.MALE)
                 .email(EMAIL)
                 .build();
     }
@@ -86,12 +78,12 @@ class AccountServiceTest {
 
             @BeforeEach
             void prepareValidAccountSignUpDto() {
-                accountSignUpDto = AccountSignUpDto.builder()
+                createDto = AccountDto.Create.builder()
                         .loginId(LOGIN_ID)
                         .password(PASSWORD)
                         .name(NAME)
-                        .bornDate(LocalDateTime.now())
-                        .sex(MALE)
+                        .bornDate(BORN_DATE)
+                        .gender(Gender.MALE)
                         .email(EMAIL)
                         .build();
 
@@ -101,7 +93,7 @@ class AccountServiceTest {
             @Test
             @DisplayName("사용자를 등록하고 Account 정보를 담은 응답을 리턴한다")
             void it_returns_response_with_new_account() {
-                AccountApiResponse response = accountService.signUp(accountSignUpDto).getData();
+                response = accountService.signUp(createDto);
 
                 assertThat(response.getLoginId()).isEqualTo(LOGIN_ID);
                 assertThat(response.getName()).isEqualTo(NAME);
@@ -116,12 +108,12 @@ class AccountServiceTest {
 
             @BeforeEach
             void prepareDuplicatedLoginId() {
-                duplicatedDto = AccountSignUpDto.builder()
+                duplicatedCreateDto = AccountDto.Create.builder()
                         .loginId(EXISTED_LOGIN_ID)
                         .password(PASSWORD)
                         .name(NAME)
-                        .bornDate(LocalDateTime.now())
-                        .sex(MALE)
+                        .bornDate(BORN_DATE)
+                        .gender(Gender.MALE)
                         .email(EMAIL)
                         .build();
 
@@ -131,7 +123,7 @@ class AccountServiceTest {
             @Test
             @DisplayName("DuplicatedException 예외를 던진다")
             void it_returns_duplicatedException() {
-                assertThatThrownBy(() -> accountService.signUp(duplicatedDto))
+                assertThatThrownBy(() -> accountService.signUp(duplicatedCreateDto))
                         .isExactlyInstanceOf(DuplicatedException.class);
 
                 verify(accountRepository, never()).save(any(Account.class));
@@ -144,12 +136,12 @@ class AccountServiceTest {
 
             @BeforeEach
             void prepareDuplicatedEmail() {
-                duplicatedDto = AccountSignUpDto.builder()
+                duplicatedCreateDto = AccountDto.Create.builder()
                         .loginId(LOGIN_ID)
                         .password(PASSWORD)
                         .name(NAME)
-                        .bornDate(LocalDateTime.now())
-                        .sex(MALE)
+                        .bornDate(BORN_DATE)
+                        .gender(Gender.MALE)
                         .email(EXISTED_EMAIL)
                         .build();
 
@@ -159,7 +151,7 @@ class AccountServiceTest {
             @Test
             @DisplayName("DuplicatedException 예외를 던진다")
             void it_returns_duplicatedException() {
-                assertThatThrownBy(() -> accountService.signUp(duplicatedDto))
+                assertThatThrownBy(() -> accountService.signUp(duplicatedCreateDto))
                         .isExactlyInstanceOf(DuplicatedException.class);
 
                 verify(accountRepository, never()).save(any(Account.class));
@@ -173,7 +165,7 @@ class AccountServiceTest {
 
         @BeforeEach
         void prepareFoundAccount() {
-            accountUpdateDto = AccountUpdateDto.builder()
+            updateDto = AccountDto.Update.builder()
                     .originalPassword(PASSWORD)
                     .newPassword(NEW_PASSWORD)
                     .email(NEW_EMAIL)
@@ -195,7 +187,7 @@ class AccountServiceTest {
             @Test
             @DisplayName("사용자를 수정하고 Account 정보를 담은 응답을 리턴한다")
             void it_returns_response_with_updated_account() {
-                AccountApiResponse response = accountService.update(EXISTED_ID, accountUpdateDto).getData();
+                response = accountService.update(EXISTED_ID, updateDto);
 
                 assertThat(response.getEmail()).isEqualTo(NEW_EMAIL);
                 verify(accountRepository, times(1)).findById(any(Long.class));
@@ -223,10 +215,19 @@ class AccountServiceTest {
         @DisplayName("update 메소드는")
         class Describe_update {
 
+            @BeforeEach
+            void prepareUpdate() {
+                updateDto = AccountDto.Update.builder()
+                        .originalPassword(PASSWORD)
+                        .newPassword(NEW_PASSWORD)
+                        .email(NEW_EMAIL)
+                        .build();
+            }
+
             @Test
             @DisplayName("NotFoundException 예외를 던진다")
             void it_returns_notFoundException() {
-                assertThatThrownBy(() -> accountService.update(NOT_EXISTED_ID, accountUpdateDto))
+                assertThatThrownBy(() -> accountService.update(NOT_EXISTED_ID, updateDto))
                         .isExactlyInstanceOf(NotFoundException.class);
 
                 verify(accountRepository, times(1)).findById(any(Long.class));

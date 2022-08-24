@@ -14,14 +14,12 @@ class AccountTest {
 
         // when
         Account account = Account.builder()
-                .id(1L)
                 .loginId(LOGIN_ID)
                 .password(PASSWORD)
                 .build();
 
         // then
         assertThat(account).isNotNull();
-        assertThat(account.getId()).isEqualTo(1L);
         assertThat(account.getLoginId()).isEqualTo(LOGIN_ID);
         assertThat(account.getPassword()).isEqualTo(PASSWORD);
     }
@@ -40,9 +38,10 @@ class AccountTest {
                 .email(EMAIL)
                 .build();
 
-        account.updatePasswordAndEmail(NEW_PASSWORD, NEW_EMAIL);
+        Account updated = account.updatePasswordAndEmail(NEW_PASSWORD, NEW_EMAIL);
 
         // then
+        assertThat(account).isEqualTo(updated);
         assertThat(account.getPassword()).isEqualTo(NEW_PASSWORD);
         assertThat(account.getEmail()).isEqualTo(NEW_EMAIL);
     }
