@@ -6,6 +6,7 @@ import com.sedin.qna.account.model.Gender;
 import com.sedin.qna.account.service.AccountService;
 import com.sedin.qna.exception.DuplicatedException;
 import com.sedin.qna.exception.NotFoundException;
+import com.sedin.qna.util.ApiDocumentUtil;
 import com.sedin.qna.util.DocumentFormatGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -19,17 +20,18 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 
-import static com.sedin.qna.util.ApiDocumentUtil.getDocumentRequest;
-import static com.sedin.qna.util.ApiDocumentUtil.getDocumentResponse;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -41,9 +43,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
+import static org.springframework.restdocs.payload.PayloadDocumentation.beneathPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -133,11 +138,12 @@ class AccountControllerWebTest {
                         .content(requestBody)
                         .accept(MediaType.APPLICATION_JSON));
 
+                // Post Account RestDocs
                 result.andExpect(status().isCreated())
                         .andExpect(content().string(containsString(LOGIN_ID)))
                         .andDo(document("create-account",
-                                getDocumentRequest(),
-                                getDocumentResponse(),
+                                ApiDocumentUtil.getDocumentRequest(),
+                                ApiDocumentUtil.getDocumentResponse(),
                                 requestFields(
                                         fieldWithPath("loginId").type(JsonFieldType.STRING).description("아이디"),
                                         fieldWithPath("password").type(JsonFieldType.STRING).description("비밀번호"),
@@ -149,16 +155,15 @@ class AccountControllerWebTest {
                                         fieldWithPath("email").type(JsonFieldType.STRING).description("이메일")
                                 ),
                                 responseFields(
-                                        fieldWithPath("code").type(JsonFieldType.STRING).description("결과 코드"),
-                                        fieldWithPath("message").type(JsonFieldType.STRING).description("결과 메세지"),
-                                        fieldWithPath("data.account.id").type(JsonFieldType.NUMBER).description("아이디"),
-                                        fieldWithPath("data.account.loginId").type(JsonFieldType.STRING).description("로그인 아이디"),
-                                        fieldWithPath("data.account.name").type(JsonFieldType.STRING).description("이름"),
-                                        fieldWithPath("data.account.bornDate").type(JsonFieldType.STRING)
+                                        beneathPath("data").withSubsectionId("data"),
+                                        fieldWithPath("account.id").type(JsonFieldType.NUMBER).description("아이디"),
+                                        fieldWithPath("account.loginId").type(JsonFieldType.STRING).description("로그인 아이디"),
+                                        fieldWithPath("account.name").type(JsonFieldType.STRING).description("이름"),
+                                        fieldWithPath("account.bornDate").type(JsonFieldType.STRING)
                                                 .attributes(DocumentFormatGenerator.getDateFormat())
                                                 .description("생년월일"),
-                                        fieldWithPath("data.account.gender").type(JsonFieldType.STRING).description("성별"),
-                                        fieldWithPath("data.account.email").type(JsonFieldType.STRING).description("이메일")
+                                        fieldWithPath("account.gender").type(JsonFieldType.STRING).description("성별"),
+                                        fieldWithPath("account.email").type(JsonFieldType.STRING).description("이메일")
                                 )));
 
                 verify(accountService, times(1)).signUp(any(AccountDto.Create.class));
@@ -190,9 +195,9 @@ class AccountControllerWebTest {
                 String requestBody = objectMapper.writeValueAsString(registeredDto);
 
                 mockMvc.perform(post("/api/accounts")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .content(requestBody))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .characterEncoding(StandardCharsets.UTF_8)
+                                .content(requestBody))
                         .andExpect(status().isBadRequest());
 
                 verify(accountService, times(1)).signUp(any(AccountDto.Create.class));
@@ -221,9 +226,9 @@ class AccountControllerWebTest {
                 String requestBody = objectMapper.writeValueAsString(createDtoWithEmptyArgument);
 
                 mockMvc.perform(post("/api/accounts")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .content(requestBody))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .characterEncoding(StandardCharsets.UTF_8)
+                                .content(requestBody))
                         .andExpect(status().isBadRequest());
 
                 verify(accountService, never()).signUp(any(AccountDto.Create.class));
@@ -264,15 +269,38 @@ class AccountControllerWebTest {
             void it_returns_httpStatus_OK() throws Exception {
                 String requestBody = objectMapper.writeValueAsString(updateDto);
 
-                mockMvc.perform(patch("/api/accounts/" + EXISTED_ID)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .content(requestBody))
-                        .andExpect(status().isOk());
+                ResultActions result = mockMvc.perform(RestDocumentationRequestBuilders.patch("/api/accounts/{id}", EXISTED_ID)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .characterEncoding(StandardCharsets.UTF_8)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .content(requestBody))
+                        .andDo(MockMvcResultHandlers.print());
+
+                // Patch Account RestDocs
+                result.andExpect(status().isOk())
+                        .andDo(document("update-account",
+                                ApiDocumentUtil.getDocumentRequest(),
+                                ApiDocumentUtil.getDocumentResponse(),
+                                pathParameters(parameterWithName("id").description("업데이트할 사용자 id")),
+                                requestFields(
+                                        fieldWithPath("originalPassword").type(JsonFieldType.STRING).description("기존 비밀번호"),
+                                        fieldWithPath("newPassword").type(JsonFieldType.STRING).description("변경 할 비밀번호"),
+                                        fieldWithPath("email").type(JsonFieldType.STRING).description("변경 할 이메일")
+                                ),
+                                responseFields(
+                                        beneathPath("data").withSubsectionId("data"),
+                                        fieldWithPath("account.id").type(JsonFieldType.NUMBER).description("아이디"),
+                                        fieldWithPath("account.loginId").type(JsonFieldType.STRING).description("로그인 아이디"),
+                                        fieldWithPath("account.name").type(JsonFieldType.STRING).description("이름"),
+                                        fieldWithPath("account.bornDate").type(JsonFieldType.STRING)
+                                                .attributes(DocumentFormatGenerator.getDateFormat())
+                                                .description("생년월일"),
+                                        fieldWithPath("account.gender").type(JsonFieldType.STRING).description("성별"),
+                                        fieldWithPath("account.email").type(JsonFieldType.STRING).description("이메일")
+                                )));
 
                 verify(accountService, times(1)).update(eq(EXISTED_ID), any(AccountDto.Update.class));
             }
-
         }
 
         @Nested
@@ -294,9 +322,9 @@ class AccountControllerWebTest {
                 String requestBody = objectMapper.writeValueAsString(updateDtoWithEmptyArgument);
 
                 mockMvc.perform(patch("/api/accounts/" + EXISTED_ID)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .content(requestBody))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .characterEncoding(StandardCharsets.UTF_8)
+                                .content(requestBody))
                         .andExpect(status().isBadRequest());
 
                 verify(accountService, never())
@@ -326,9 +354,9 @@ class AccountControllerWebTest {
                 String requestBody = objectMapper.writeValueAsString(updateDto);
 
                 mockMvc.perform(patch("/api/accounts/" + NOT_EXISTED_ID)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .content(requestBody))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .characterEncoding(StandardCharsets.UTF_8)
+                                .content(requestBody))
                         .andExpect(status().isBadRequest());
 
                 verify(accountService, times(1))
@@ -353,8 +381,15 @@ class AccountControllerWebTest {
             @Test
             @DisplayName("HttpStatus 200 OK를 응답한다")
             void it_returns_httpStatus_OK() throws Exception {
-                mockMvc.perform(delete("/api/accounts/" + EXISTED_ID))
-                        .andExpect(status().isOk());
+                ResultActions result = mockMvc.perform(RestDocumentationRequestBuilders.delete("/api/accounts/{id}", EXISTED_ID));
+
+                // Delete Account RestDocs
+                result.andExpect(status().isOk())
+                        .andDo(document("delete-account",
+                                ApiDocumentUtil.getDocumentRequest(),
+                                ApiDocumentUtil.getDocumentResponse(),
+                                pathParameters(parameterWithName("id").description("삭제할 사용자 id"))
+                                ));
 
                 verify(accountService, times(1)).delete(EXISTED_ID);
             }
