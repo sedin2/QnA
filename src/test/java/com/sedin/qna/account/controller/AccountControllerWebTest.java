@@ -6,6 +6,7 @@ import com.sedin.qna.account.model.Gender;
 import com.sedin.qna.account.service.AccountService;
 import com.sedin.qna.exception.DuplicatedException;
 import com.sedin.qna.exception.NotFoundException;
+import com.sedin.qna.util.DocumentFormatGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -21,7 +22,6 @@ import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -135,7 +135,6 @@ class AccountControllerWebTest {
 
                 result.andExpect(status().isCreated())
                         .andExpect(content().string(containsString(LOGIN_ID)))
-                        .andDo(MockMvcResultHandlers.print())
                         .andDo(document("create-account",
                                 getDocumentRequest(),
                                 getDocumentResponse(),
@@ -143,7 +142,9 @@ class AccountControllerWebTest {
                                         fieldWithPath("loginId").type(JsonFieldType.STRING).description("아이디"),
                                         fieldWithPath("password").type(JsonFieldType.STRING).description("비밀번호"),
                                         fieldWithPath("name").type(JsonFieldType.STRING).description("이름"),
-                                        fieldWithPath("bornDate").type(JsonFieldType.STRING).description("생년월일"),
+                                        fieldWithPath("bornDate").type(JsonFieldType.STRING)
+                                                .attributes(DocumentFormatGenerator.getDateFormat())
+                                                .description("생년월일"),
                                         fieldWithPath("gender").type(JsonFieldType.STRING).description("성별"),
                                         fieldWithPath("email").type(JsonFieldType.STRING).description("이메일")
                                 ),
@@ -153,7 +154,9 @@ class AccountControllerWebTest {
                                         fieldWithPath("data.account.id").type(JsonFieldType.NUMBER).description("아이디"),
                                         fieldWithPath("data.account.loginId").type(JsonFieldType.STRING).description("로그인 아이디"),
                                         fieldWithPath("data.account.name").type(JsonFieldType.STRING).description("이름"),
-                                        fieldWithPath("data.account.bornDate").type(JsonFieldType.STRING).description("생년월일"),
+                                        fieldWithPath("data.account.bornDate").type(JsonFieldType.STRING)
+                                                .attributes(DocumentFormatGenerator.getDateFormat())
+                                                .description("생년월일"),
                                         fieldWithPath("data.account.gender").type(JsonFieldType.STRING).description("성별"),
                                         fieldWithPath("data.account.email").type(JsonFieldType.STRING).description("이메일")
                                 )));
@@ -265,8 +268,7 @@ class AccountControllerWebTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .content(requestBody))
-                        .andExpect(status().isOk())
-                        .andDo(MockMvcResultHandlers.print());
+                        .andExpect(status().isOk());
 
                 verify(accountService, times(1)).update(eq(EXISTED_ID), any(AccountDto.Update.class));
             }
