@@ -1,0 +1,115 @@
+ifndef::snippets[]
+:snippets: ../build/generated-snippets
+endif::[]
+= API Document
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 4
+:sectlinks:
+
+[[introduction]]
+== 소개
+
+사용자 API
+
+[[common]]
+== 공통 사항
+
+API에 관계없이 아래 사항을 지켜주셔야 합니다.
+
+=== Domain
+
+|===
+| 환경 | Domain
+
+| 개발서버
+| `http://docs.api.com:8080`
+
+| 운영서버
+| `https://docs.api.com`
+|===
+
+=== Common Response
+
+include::{snippets}/common/custom-response-fields.adoc[]
+
+include::{snippets}/common/custom-response-fields-apiResponseCodes.adoc[]
+
+
+&#160;
+
+
+== 사용자 API
+
+[[Account-create]]
+=== 추가
+
+==== Request
+
+include::{snippets}/create-account/request-fields.adoc[]
+
+include::{snippets}/common/custom-response-fields-genders.adoc[]
+
+===== Request HTTP Example
+
+include::{snippets}/create-account/http-request.adoc[]
+
+==== Response
+
+include::{snippets}/common/custom-response-fields.adoc[]
+
+include::{snippets}/create-account/response-fields-data.adoc[]
+
+===== Response HTTP Example
+
+include::{snippets}/create-account/http-response.adoc[]
+
+&#160;
+
+[[Account-update]]
+=== 수정
+
+==== Request
+
+include::{snippets}/update-account/request-fields.adoc[]
+
+include::{snippets}/update-account/path-parameters.adoc[]
+
+===== Request HTTP Example
+
+include::{snippets}/update-account/http-request.adoc[]
+
+==== Response
+
+include::{snippets}/common/custom-response-fields.adoc[]
+
+include::{snippets}/update-account/response-fields-data.adoc[]
+
+===== Response HTTP Example
+
+include::{snippets}/update-account/http-response.adoc[]
+
+&#160;
+
+[[Account-delete]]
+=== 삭제
+
+==== Request
+
+include::{snippets}/delete-account/path-parameters.adoc[]
+
+===== Request HTTP Example
+
+include::{snippets}/delete-account/http-request.adoc[]
+
+==== Response
+
+include::{snippets}/common/custom-response-fields.adoc[]
+
+===== Response HTTP Example
+
+include::{snippets}/delete-account/http-response.adoc[]
+
+&#160;
