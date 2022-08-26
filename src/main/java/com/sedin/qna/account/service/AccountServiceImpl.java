@@ -5,15 +5,18 @@ import com.sedin.qna.account.model.AccountDto;
 import com.sedin.qna.account.repository.AccountRepository;
 import com.sedin.qna.exception.DuplicatedException;
 import com.sedin.qna.exception.NotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AccountServiceImpl implements AccountService {
 
+    private final PasswordEncoder passwordEncoder;
     private final AccountRepository accountRepository;
 
-    public AccountServiceImpl(AccountRepository accountRepository) {
+    public AccountServiceImpl(PasswordEncoder passwordEncoder, AccountRepository accountRepository) {
+        this.passwordEncoder = passwordEncoder;
         this.accountRepository = accountRepository;
     }
 
@@ -27,8 +30,10 @@ public class AccountServiceImpl implements AccountService {
             throw new DuplicatedException("email");
         }
 
+        create.setEncodingPassword(passwordEncoder.encode(create.getPassword()));
         Account target = create.toEntity();
         Account newAccount = accountRepository.save(target);
+
         return AccountDto.Response.of(newAccount);
     }
 

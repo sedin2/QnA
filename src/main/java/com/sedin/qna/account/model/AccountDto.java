@@ -48,6 +48,10 @@ public class AccountDto {
             this.email = email;
         }
 
+        public void setEncodingPassword(String encodedPassword) {
+            this.password = encodedPassword;
+        }
+
         public Account toEntity() {
             return Account.builder()
                     .loginId(loginId)
