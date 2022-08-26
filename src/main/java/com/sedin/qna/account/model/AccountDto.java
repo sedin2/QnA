@@ -1,5 +1,6 @@
 package com.sedin.qna.account.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -96,6 +97,8 @@ public class AccountDto {
 
         private Long id;
         private String loginId;
+        @JsonIgnore
+        private String password;
         private String name;
         @DateTimeFormat(pattern = "yyyy-MM-dd")
         private LocalDate bornDate;
@@ -103,9 +106,10 @@ public class AccountDto {
         private String email;
 
         @Builder
-        private Response(Long id, String loginId, String name, LocalDate bornDate, Gender gender, String email) {
+        private Response(Long id, String loginId, String password, String name, LocalDate bornDate, Gender gender, String email) {
             this.id = id;
             this.loginId = loginId;
+            this.password = password;
             this.name = name;
             this.bornDate = bornDate;
             this.gender = gender;
@@ -116,6 +120,7 @@ public class AccountDto {
             return Response.builder()
                     .id(account.getId())
                     .loginId(account.getLoginId())
+                    .password(account.getPassword())
                     .name(account.getName())
                     .bornDate(account.getBornDate())
                     .gender(account.getGender())
