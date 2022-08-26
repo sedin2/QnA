@@ -13,9 +13,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,13 +35,17 @@ class AccountServiceTest {
     private static final Long NOT_EXISTED_ID = 9999L;
     private static final String LOGIN_ID = "sedin";
     private static final String EXISTED_LOGIN_ID = "existed";
-    private static final String PASSWORD = "12341234";
+    private static final String ENCODED_PASSWORD = "1e2n3c4o1d2e34";
+    private static final String RAW_PASSWORD = "12341234";
     private static final String NEW_PASSWORD = "newPassword";
     private static final String NAME = "LeeSeJin";
     private static final LocalDate BORN_DATE = LocalDate.of(1994, 8, 30);
     private static final String EMAIL = "sejin@email.com";
     private static final String NEW_EMAIL = "new@email.com";
     private static final String EXISTED_EMAIL = "existed@email.com";
+
+    @MockBean
+    private PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
 
     @MockBean
     private AccountRepository accountRepository = mock(AccountRepository.class);
@@ -56,11 +60,11 @@ class AccountServiceTest {
 
     @BeforeEach
     void prepare() {
-        accountService = new AccountServiceImpl(accountRepository);
+        accountService = new AccountServiceImpl(passwordEncoder, accountRepository);
 
         account = Account.builder()
                 .loginId(LOGIN_ID)
-                .password(PASSWORD)
+                .password(ENCODED_PASSWORD)
                 .name(NAME)
                 .bornDate(BORN_DATE)
                 .gender(Gender.MALE)
@@ -80,7 +84,7 @@ class AccountServiceTest {
             void prepareValidAccountSignUpDto() {
                 createDto = AccountDto.Create.builder()
                         .loginId(LOGIN_ID)
-                        .password(PASSWORD)
+                        .password(RAW_PASSWORD)
                         .name(NAME)
                         .bornDate(BORN_DATE)
                         .gender(Gender.MALE)
@@ -97,6 +101,7 @@ class AccountServiceTest {
 
                 assertThat(response.getLoginId()).isEqualTo(LOGIN_ID);
                 assertThat(response.getName()).isEqualTo(NAME);
+                assertThat(response.getPassword()).isNotEqualTo(RAW_PASSWORD);
 
                 verify(accountRepository, times(1)).save(any(Account.class));
             }
@@ -110,7 +115,7 @@ class AccountServiceTest {
             void prepareDuplicatedLoginId() {
                 duplicatedCreateDto = AccountDto.Create.builder()
                         .loginId(EXISTED_LOGIN_ID)
-                        .password(PASSWORD)
+                        .password(RAW_PASSWORD)
                         .name(NAME)
                         .bornDate(BORN_DATE)
                         .gender(Gender.MALE)
@@ -138,7 +143,7 @@ class AccountServiceTest {
             void prepareDuplicatedEmail() {
                 duplicatedCreateDto = AccountDto.Create.builder()
                         .loginId(LOGIN_ID)
-                        .password(PASSWORD)
+                        .password(RAW_PASSWORD)
                         .name(NAME)
                         .bornDate(BORN_DATE)
                         .gender(Gender.MALE)
@@ -166,7 +171,7 @@ class AccountServiceTest {
         @BeforeEach
         void prepareFoundAccount() {
             updateDto = AccountDto.Update.builder()
-                    .originalPassword(PASSWORD)
+                    .originalPassword(RAW_PASSWORD)
                     .newPassword(NEW_PASSWORD)
                     .email(NEW_EMAIL)
                     .build();
@@ -218,7 +223,7 @@ class AccountServiceTest {
             @BeforeEach
             void prepareUpdate() {
                 updateDto = AccountDto.Update.builder()
-                        .originalPassword(PASSWORD)
+                        .originalPassword(RAW_PASSWORD)
                         .newPassword(NEW_PASSWORD)
                         .email(NEW_EMAIL)
                         .build();
