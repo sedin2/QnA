@@ -5,7 +5,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.Email;
@@ -39,8 +38,8 @@ public class AccountDto {
         }
 
         @Builder
-        private Create(@NotBlank String loginId, @NotBlank String password, @NotBlank String name,
-                       LocalDate bornDate, @NotNull Gender gender, @Email @NotBlank String email) {
+        private Create(String loginId, String password, String name,
+                       LocalDate bornDate, Gender gender, String email) {
             this.loginId = loginId;
             this.password = password;
             this.name = name;
@@ -81,7 +80,7 @@ public class AccountDto {
         }
 
         @Builder
-        private Update(@NotBlank String originalPassword, @NotBlank String newPassword, @Email @NotBlank String email) {
+        private Update(String originalPassword, String newPassword, String email) {
             this.originalPassword = originalPassword;
             this.newPassword = newPassword;
             this.email = email;
@@ -89,6 +88,25 @@ public class AccountDto {
 
         public Account complete(Account account) {
             return account.updatePasswordAndEmail(newPassword, email);
+        }
+    }
+
+    @Getter
+    public static class Login {
+
+        @NotBlank
+        private String loginId;
+        @NotBlank
+        private String password;
+
+        private Login() {
+
+        }
+
+        @Builder
+        private Login(String loginId, String password) {
+            this.loginId = loginId;
+            this.password = password;
         }
     }
 
@@ -106,7 +124,8 @@ public class AccountDto {
         private String email;
 
         @Builder
-        private Response(Long id, String loginId, String password, String name, LocalDate bornDate, Gender gender, String email) {
+        private Response(Long id, String loginId, String password, String name,
+                         LocalDate bornDate, Gender gender, String email) {
             this.id = id;
             this.loginId = loginId;
             this.password = password;
