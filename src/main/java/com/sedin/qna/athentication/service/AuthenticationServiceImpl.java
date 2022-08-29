@@ -5,7 +5,7 @@ import com.sedin.qna.account.model.AccountDto;
 import com.sedin.qna.account.repository.AccountRepository;
 import com.sedin.qna.athentication.model.AuthenticationDto;
 import com.sedin.qna.exception.NotFoundException;
-import com.sedin.qna.exception.PasswordNotCorrectException;
+import com.sedin.qna.exception.PasswordIncorrectException;
 import com.sedin.qna.util.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,7 +29,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .orElseThrow(() -> new NotFoundException("loginId"));
 
         if (isUnauthenticated(login.getPassword(), account.getPassword())) {
-            throw new PasswordNotCorrectException("password");
+            throw new PasswordIncorrectException("password");
         }
 
         return AuthenticationDto.Response.of(jwtUtil.encode(account.getId()));
