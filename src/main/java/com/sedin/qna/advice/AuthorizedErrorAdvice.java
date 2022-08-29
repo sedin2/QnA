@@ -1,6 +1,6 @@
 package com.sedin.qna.advice;
 
-import com.sedin.qna.exception.PasswordNotCorrectException;
+import com.sedin.qna.exception.PasswordIncorrectException;
 import com.sedin.qna.network.ApiResponseCode;
 import com.sedin.qna.network.ApiResponseDto;
 import org.springframework.http.HttpStatus;
@@ -26,8 +26,8 @@ public class AuthorizedErrorAdvice {
      * @return 에러 응답
      */
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    @ExceptionHandler(PasswordNotCorrectException.class)
-    public ApiResponseDto<Map<String, String>> handlePasswordIncorrect(PasswordNotCorrectException exception) {
+    @ExceptionHandler(PasswordIncorrectException.class)
+    public ApiResponseDto<Map<String, String>> handlePasswordIncorrect(PasswordIncorrectException exception) {
         Map<String, String> errorMap = new HashMap<>();
         errorMap.put(exception.getMessage(), ERROR_MESSAGE);
 
