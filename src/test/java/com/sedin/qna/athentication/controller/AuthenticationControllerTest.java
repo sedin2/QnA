@@ -49,7 +49,8 @@ class AuthenticationControllerTest {
     private final String LOGIN_ID = "loginId";
     private final String PASSWORD = "password";
     private final String INCORRECT_PASSWORD = "incorrect";
-    private final String ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhY2NvdW50SWQiOjF9.LwF0Ms-3xGGJX9JBIrc7bzGl1gYUAq3R3gesg35BA1w";
+    private final String ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhY2NvdW50SWQiOjF9." +
+            "LwF0Ms-3xGGJX9JBIrc7bzGl1gYUAq3R3gesg35BA1w";
 
     @Autowired
     private WebApplicationContext context;
@@ -117,7 +118,6 @@ class AuthenticationControllerTest {
 
     @Test
     void When_Login_Account_With_Incorrect_Password_Expect_Unauthorized() throws Exception {
-
         // given
         login = AccountDto.Login.builder()
                 .loginId(LOGIN_ID)
@@ -144,7 +144,6 @@ class AuthenticationControllerTest {
 
     @Test
     void When_Login_Account_With_Unregistered_LoginId_Expect_BadRequest() throws Exception {
-
         // given
         login = AccountDto.Login.builder()
                 .loginId(UNREGISTERED_LOGIN_ID)
@@ -153,6 +152,7 @@ class AuthenticationControllerTest {
 
         given(authenticationService.checkValidAuthentication(any(AccountDto.Login.class)))
                 .willThrow(new NotFoundException("loginId"));
+
         // when
         String requestBody = objectMapper.writeValueAsString(login);
 

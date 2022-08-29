@@ -58,8 +58,6 @@ include::{snippets}/create-account/http-request.adoc[]
 
 ==== Response
 
-include::{snippets}/common/custom-response-fields.adoc[]
-
 include::{snippets}/create-account/response-fields-data.adoc[]
 
 ===== Response HTTP Example
@@ -83,8 +81,6 @@ include::{snippets}/update-account/http-request.adoc[]
 
 ==== Response
 
-include::{snippets}/common/custom-response-fields.adoc[]
-
 include::{snippets}/update-account/response-fields-data.adoc[]
 
 ===== Response HTTP Example
@@ -106,10 +102,29 @@ include::{snippets}/delete-account/http-request.adoc[]
 
 ==== Response
 
-include::{snippets}/common/custom-response-fields.adoc[]
-
 ===== Response HTTP Example
 
 include::{snippets}/delete-account/http-response.adoc[]
+
+&#160;
+
+[[Account-login]]
+=== 로그인
+
+==== Request
+
+include::{snippets}/login-account/request-fields.adoc[]
+
+===== Request HTTP Example
+
+include::{snippets}/login-account/http-request.adoc[]
+
+==== Response
+
+include::{snippets}/login-account/response-fields-data.adoc[]
+
+===== Response HTTP Example
+
+include::{snippets}/login-account/http-response.adoc[]
 
 &#160;
