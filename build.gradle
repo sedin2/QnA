@@ -88,6 +88,11 @@ build {
     dependsOn(copyDocument)
 }
 
+javadoc {
+    source = sourceSets.main.java.srcDirs
+    options.encoding = 'UTF-8'
+}
+
 //bootJar {
 //    archiveFileName = 'app.jar'
 //    dependsOn asciidoctor
