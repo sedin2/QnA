@@ -26,13 +26,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public AuthenticationDto.Response checkValidAuthentication(AccountDto.Login login) {
         Account account = accountRepository.findByLoginId(login.getLoginId())
-                .orElseThrow(() -> new NotFoundException("loginId"));
+                .orElseThrow(() -> new NotFoundException(login.getLoginId()));
 
         if (isUnauthenticated(login.getPassword(), account.getPassword())) {
-            throw new PasswordIncorrectException("password");
+            throw new PasswordIncorrectException();
         }
 
         return AuthenticationDto.Response.of(jwtUtil.encode(account.getId()));
+    }
+
+    @Override
+    public Long decodeAccessToken(String accessToken) {
+        return Long.valueOf(jwtUtil.decode(accessToken).get("accountId").toString());
     }
 
     private boolean isUnauthenticated(String rawPassword, String encodedPassword) {
