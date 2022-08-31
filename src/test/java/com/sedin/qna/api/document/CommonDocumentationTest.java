@@ -2,6 +2,7 @@ package com.sedin.qna.api.document;
 
 import com.sedin.qna.account.model.Gender;
 import com.sedin.qna.api.document.controller.RestDocsController;
+import com.sedin.qna.athentication.service.AuthenticationService;
 import com.sedin.qna.network.ApiResponseCode;
 import com.sedin.qna.util.CustomResponseFieldsSnippet;
 import com.sedin.qna.util.EnumType;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.payload.FieldDescriptor;
@@ -37,6 +39,9 @@ public class CommonDocumentationTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockBean
+    private AuthenticationService authenticationService;
 
     @Test
     void common() throws Exception {

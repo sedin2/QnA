@@ -7,11 +7,11 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-public class WebMvcConfiguration implements WebMvcConfigurer {
+public class WebMvcConfig implements WebMvcConfigurer {
 
     private final AuthenticationInterceptor authenticationInterceptor;
 
-    public WebMvcConfiguration(AuthenticationInterceptor authenticationInterceptor) {
+    public WebMvcConfig(AuthenticationInterceptor authenticationInterceptor) {
         this.authenticationInterceptor = authenticationInterceptor;
     }
 
@@ -22,6 +22,8 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(authenticationInterceptor);
+        registry.addInterceptor(authenticationInterceptor)
+                .excludePathPatterns("/docs")
+                .excludePathPatterns("/api/auth/*");
     }
 }

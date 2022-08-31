@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sedin.qna.account.model.AccountDto;
 import com.sedin.qna.account.model.Gender;
 import com.sedin.qna.account.service.AccountService;
+import com.sedin.qna.athentication.service.AuthenticationService;
 import com.sedin.qna.exception.DuplicatedException;
 import com.sedin.qna.exception.NotFoundException;
 import com.sedin.qna.util.ApiDocumentUtil;
@@ -79,6 +80,9 @@ class AccountControllerWebTest {
 
     @MockBean
     private AccountService accountService;
+
+    @MockBean
+    private AuthenticationService authenticationService;
 
     private AccountDto.Create createDto;
     private AccountDto.Create registeredDto;
