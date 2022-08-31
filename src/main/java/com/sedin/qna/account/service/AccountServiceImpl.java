@@ -23,11 +23,11 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public AccountDto.Response signUp(AccountDto.Create create) {
         if (accountRepository.existsByLoginId(create.getLoginId())) {
-            throw new DuplicatedException("loginId");
+            throw new DuplicatedException(create.getLoginId());
         }
 
         if (accountRepository.existsByEmail(create.getEmail())) {
-            throw new DuplicatedException("email");
+            throw new DuplicatedException(create.getEmail());
         }
 
         create.setEncodingPassword(passwordEncoder.encode(create.getPassword()));
@@ -42,7 +42,7 @@ public class AccountServiceImpl implements AccountService {
     public AccountDto.Response update(Long id, AccountDto.Update update) {
         Account updated = accountRepository.findById(id)
                 .map(update::complete)
-                .orElseThrow(() -> new NotFoundException("accountId"));
+                .orElseThrow(() -> new NotFoundException(id.toString()));
 
         return AccountDto.Response.of(updated);
     }
@@ -50,7 +50,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public void delete(Long id) {
         Account account = accountRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("accountId"));
+                .orElseThrow(() -> new NotFoundException(id.toString()));
 
         accountRepository.delete(account);
     }

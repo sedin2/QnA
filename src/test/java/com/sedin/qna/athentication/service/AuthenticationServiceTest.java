@@ -97,7 +97,7 @@ class AuthenticationServiceTest {
                 .password(PASSWORD)
                 .build();
 
-        given(accountRepository.findByLoginId(anyString())).willThrow(new NotFoundException("loginId"));
+        given(accountRepository.findByLoginId(anyString())).willThrow(new NotFoundException(UNREGISTERED_LOGIN_ID));
 
         // when & then
         assertThatThrownBy(() -> authenticationService.checkValidAuthentication(loginWithUnregisteredLoginId))

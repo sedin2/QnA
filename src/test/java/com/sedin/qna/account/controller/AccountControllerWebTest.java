@@ -344,7 +344,7 @@ class AccountControllerWebTest {
                         .build();
 
                 given(accountService.update(eq(NOT_EXISTED_ID), any(AccountDto.Update.class)))
-                        .willThrow(new NotFoundException("accountId"));
+                        .willThrow(new NotFoundException(NOT_EXISTED_ID.toString()));
             }
 
             @Test
@@ -380,7 +380,8 @@ class AccountControllerWebTest {
             @Test
             @DisplayName("HttpStatus 200 OK를 응답한다")
             void it_returns_httpStatus_OK() throws Exception {
-                ResultActions result = mockMvc.perform(RestDocumentationRequestBuilders.delete("/api/accounts/{id}", EXISTED_ID));
+                ResultActions result = mockMvc.perform(
+                        RestDocumentationRequestBuilders.delete("/api/accounts/{id}", EXISTED_ID));
 
                 // Delete Account RestDocs
                 result.andExpect(status().isOk())
@@ -400,7 +401,7 @@ class AccountControllerWebTest {
 
             @BeforeEach
             void prepareNotExistedAccountId() {
-                doThrow(new NotFoundException("accountId")).when(accountService).delete(NOT_EXISTED_ID);
+                doThrow(new NotFoundException(NOT_EXISTED_ID.toString())).when(accountService).delete(NOT_EXISTED_ID);
             }
 
             @Test

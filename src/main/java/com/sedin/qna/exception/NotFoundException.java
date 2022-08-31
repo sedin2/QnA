@@ -5,7 +5,9 @@ package com.sedin.qna.exception;
  */
 public class NotFoundException extends RuntimeException {
 
-    public NotFoundException(String message) {
-        super(message);
+    private static final String NOT_FOUND = "Not Found: ";
+
+    public NotFoundException(String resource) {
+        super(NOT_FOUND + resource);
     }
 }
