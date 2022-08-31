@@ -1,5 +1,6 @@
 package com.sedin.qna.advice;
 
+import com.sedin.qna.exception.InvalidTokenException;
 import com.sedin.qna.exception.PasswordIncorrectException;
 import com.sedin.qna.network.ApiResponseCode;
 import com.sedin.qna.network.ApiResponseDto;
@@ -17,7 +18,7 @@ import java.util.Map;
 @RestControllerAdvice
 public class AuthorizedErrorAdvice {
 
-    private static final String ERROR_MESSAGE = "Password Incorrect Error";
+    private static final String MESSAGE = "message";
 
     /**
      * 패스워드가 틀릴 때 에러 메세지를 리턴합니다.
@@ -29,7 +30,21 @@ public class AuthorizedErrorAdvice {
     @ExceptionHandler(PasswordIncorrectException.class)
     public ApiResponseDto<Map<String, String>> handlePasswordIncorrect(PasswordIncorrectException exception) {
         Map<String, String> errorMap = new HashMap<>();
-        errorMap.put(exception.getMessage(), ERROR_MESSAGE);
+        errorMap.put(MESSAGE, exception.getMessage());
+
+        return ApiResponseDto.ERROR(ApiResponseCode.UNAUTHORIZED, errorMap);
+    }
+
+    /**
+     * 토큰이 유효하지 않을 때 에러 메세지를 리턴합니다.
+     * @param exception 토큰 유효성 예외
+     * @return 에러 응답
+     */
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(InvalidTokenException.class)
+    public ApiResponseDto<Map<String, String>> handleTokenInvalid(InvalidTokenException exception) {
+        Map<String, String> errorMap = new HashMap<>();
+        errorMap.put(MESSAGE, exception.getMessage());
 
         return ApiResponseDto.ERROR(ApiResponseCode.UNAUTHORIZED, errorMap);
     }

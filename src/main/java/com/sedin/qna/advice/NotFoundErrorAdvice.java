@@ -17,7 +17,7 @@ import java.util.Map;
 @RestControllerAdvice
 public class NotFoundErrorAdvice {
 
-    private static final String ERROR_MESSAGE = "Not Found Error";
+    private static final String MESSAGE = "message";
 
     /**
      * 사용자를 찾을 수 없을 때 에러 메세지를 리턴합니다.
@@ -29,7 +29,7 @@ public class NotFoundErrorAdvice {
     @ExceptionHandler(NotFoundException.class)
     public ApiResponseDto<Map<String, String>> handleAccountNotFound(NotFoundException exception) {
         Map<String, String> errorMap = new HashMap<>();
-        errorMap.put(exception.getMessage(), ERROR_MESSAGE);
+        errorMap.put(MESSAGE, exception.getMessage());
 
         return ApiResponseDto.ERROR(ApiResponseCode.NOT_FOUND, errorMap);
     }

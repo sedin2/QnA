@@ -17,7 +17,7 @@ import java.util.Map;
 @RestControllerAdvice
 public class DuplicatedErrorAdvice {
 
-    private static final String ERROR_MESSAGE = "Duplicated Error";
+    private static final String MESSAGE = "message";
 
     /**
      * 사용자 등록 요청 데이터가 중복일 때 에러 메세지를 리턴합니다.
@@ -29,7 +29,7 @@ public class DuplicatedErrorAdvice {
     @ExceptionHandler(DuplicatedException.class)
     public ApiResponseDto<Map<String, String>> handleAccountAlreadyExisted(DuplicatedException exception) {
         Map<String, String> errorMap = new HashMap<>();
-        errorMap.put(exception.getMessage(), ERROR_MESSAGE);
+        errorMap.put(MESSAGE, exception.getMessage());
 
         return ApiResponseDto.ERROR(ApiResponseCode.DUPLICATED_ERROR, errorMap);
     }

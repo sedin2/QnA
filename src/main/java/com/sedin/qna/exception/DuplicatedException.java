@@ -5,7 +5,9 @@ package com.sedin.qna.exception;
  */
 public class DuplicatedException extends RuntimeException {
 
-    public DuplicatedException(String message) {
-        super(message);
+    private static final String DUPLICATED_MESSAGE = "Duplicated Resource: ";
+
+    public DuplicatedException(String resource) {
+        super(DUPLICATED_MESSAGE + resource);
     }
 }

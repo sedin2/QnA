@@ -125,7 +125,7 @@ class AuthenticationControllerTest {
                 .build();
 
         given(authenticationService.checkValidAuthentication(any(AccountDto.Login.class)))
-                .willThrow(new PasswordIncorrectException("password"));
+                .willThrow(new PasswordIncorrectException());
 
         // when
         String requestBody = objectMapper.writeValueAsString(login);
@@ -151,7 +151,7 @@ class AuthenticationControllerTest {
                 .build();
 
         given(authenticationService.checkValidAuthentication(any(AccountDto.Login.class)))
-                .willThrow(new NotFoundException("loginId"));
+                .willThrow(new NotFoundException(UNREGISTERED_LOGIN_ID));
 
         // when
         String requestBody = objectMapper.writeValueAsString(login);

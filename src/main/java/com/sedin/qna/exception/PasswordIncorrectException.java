@@ -5,7 +5,9 @@ package com.sedin.qna.exception;
  */
 public class PasswordIncorrectException extends RuntimeException {
 
-    public PasswordIncorrectException(String message) {
-        super(message);
+    private static final String INCORRECT_PASSWORD = "Incorrect Password";
+
+    public PasswordIncorrectException() {
+        super(INCORRECT_PASSWORD);
     }
 }
