@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -33,14 +34,16 @@ public class AccountController {
 
     @PatchMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponseDto<AccountDto.ResponseOne> update(@PathVariable Long id,
+    public ApiResponseDto<AccountDto.ResponseOne> update(@RequestAttribute Long accountId,
+                                                         @PathVariable Long id,
                                                          @RequestBody @Valid AccountDto.Update update) {
         return ApiResponseDto.OK(new AccountDto.ResponseOne(accountService.update(id, update)));
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponseDto<String> delete(@PathVariable Long id) {
+    public ApiResponseDto<String> delete(@RequestAttribute Long accountId,
+                                         @PathVariable Long id) {
         accountService.delete(id);
         return ApiResponseDto.DEFAULT_OK;
     }
