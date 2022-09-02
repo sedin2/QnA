@@ -1,7 +1,6 @@
 package com.sedin.qna.interceptor;
 
 import com.sedin.qna.athentication.service.AuthenticationService;
-import com.sedin.qna.exception.InvalidTokenException;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -14,7 +13,6 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
 
     private final String ACCOUNT_ID = "accountId";
     private final String AUTHORIZATION = "Authorization";
-    private final String BEARER = "Bearer ";
 
     private final AuthenticationService authenticationService;
 
@@ -31,13 +29,10 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
         }
 
         String authorization = request.getHeader(AUTHORIZATION);
+        String accessToken = authenticationService.getAccessToken(authorization);
+        Long accountId = authenticationService.decodeAccessToken(accessToken);
 
-        if (!authorization.startsWith(BEARER)) {
-            throw new InvalidTokenException();
-        }
-
-        String accessToken = authorization.substring(BEARER.length());
-        request.setAttribute(ACCOUNT_ID, authenticationService.decodeAccessToken(accessToken));
+        request.setAttribute(ACCOUNT_ID, accountId);
 
         return true;
     }

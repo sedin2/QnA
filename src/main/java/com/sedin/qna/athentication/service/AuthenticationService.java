@@ -8,4 +8,6 @@ public interface AuthenticationService {
     AuthenticationDto.Response checkValidAuthentication(AccountDto.Login login);
 
     Long decodeAccessToken(String accessToken);
+
+    String getAccessToken(String authorization);
 }
