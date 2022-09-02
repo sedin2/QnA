@@ -1,7 +1,7 @@
 package com.sedin.qna.exception;
 
 /**
- * 리소스를 찾을 수 없을 때 던집니다.
+ * 리소스를 찾을 수 없을 경우에 던집니다.
  */
 public class NotFoundException extends RuntimeException {
 
