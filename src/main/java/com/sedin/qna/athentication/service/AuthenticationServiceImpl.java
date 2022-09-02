@@ -4,6 +4,7 @@ import com.sedin.qna.account.model.Account;
 import com.sedin.qna.account.model.AccountDto;
 import com.sedin.qna.account.repository.AccountRepository;
 import com.sedin.qna.athentication.model.AuthenticationDto;
+import com.sedin.qna.exception.InvalidTokenException;
 import com.sedin.qna.exception.NotFoundException;
 import com.sedin.qna.exception.PasswordIncorrectException;
 import com.sedin.qna.util.JwtUtil;
@@ -12,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AuthenticationServiceImpl implements AuthenticationService {
+
+    private final String BEARER = "Bearer ";
 
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
@@ -38,6 +41,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public Long decodeAccessToken(String accessToken) {
         return Long.valueOf(jwtUtil.decode(accessToken).get("accountId").toString());
+    }
+
+    @Override
+    public String getAccessToken(String authorization) {
+        if (authorization == null || !authorization.startsWith(BEARER)) {
+            throw new InvalidTokenException();
+        }
+
+        return authorization.substring(BEARER.length());
     }
 
     private boolean isUnauthenticated(String rawPassword, String encodedPassword) {
