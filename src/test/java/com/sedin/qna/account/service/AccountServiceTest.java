@@ -192,7 +192,7 @@ class AccountServiceTest {
             @Test
             @DisplayName("사용자를 수정하고 Account 정보를 담은 응답을 리턴한다")
             void it_returns_response_with_updated_account() {
-                response = accountService.update(EXISTED_ID, updateDto);
+                response = accountService.update(EXISTED_ID, EXISTED_ID, updateDto);
 
                 assertThat(response.getEmail()).isEqualTo(NEW_EMAIL);
                 verify(accountRepository, times(1)).findById(any(Long.class));
@@ -206,7 +206,7 @@ class AccountServiceTest {
             @Test
             @DisplayName("사용자를 삭제한다")
             void it_deletes_account() {
-                accountService.delete(EXISTED_ID);
+                accountService.delete(EXISTED_ID, EXISTED_ID);
                 verify(accountRepository, times(1)).delete(any(Account.class));
             }
         }
@@ -232,7 +232,7 @@ class AccountServiceTest {
             @Test
             @DisplayName("NotFoundException 예외를 던진다")
             void it_returns_notFoundException() {
-                assertThatThrownBy(() -> accountService.update(NOT_EXISTED_ID, updateDto))
+                assertThatThrownBy(() -> accountService.update(NOT_EXISTED_ID, NOT_EXISTED_ID, updateDto))
                         .isExactlyInstanceOf(NotFoundException.class);
 
                 verify(accountRepository, times(1)).findById(any(Long.class));
@@ -247,7 +247,7 @@ class AccountServiceTest {
             @Test
             @DisplayName("NotFoundException 예외를 던진다")
             void it_returns_notFoundException() {
-                assertThatThrownBy(() -> accountService.delete(NOT_EXISTED_ID))
+                assertThatThrownBy(() -> accountService.delete(NOT_EXISTED_ID, NOT_EXISTED_ID))
                         .isExactlyInstanceOf(NotFoundException.class);
 
                 verify(accountRepository, times(1)).findById(any(Long.class));
