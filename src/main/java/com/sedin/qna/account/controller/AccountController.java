@@ -37,14 +37,14 @@ public class AccountController {
     public ApiResponseDto<AccountDto.ResponseOne> update(@RequestAttribute Long accountId,
                                                          @PathVariable Long id,
                                                          @RequestBody @Valid AccountDto.Update update) {
-        return ApiResponseDto.OK(new AccountDto.ResponseOne(accountService.update(id, update)));
+        return ApiResponseDto.OK(new AccountDto.ResponseOne(accountService.update(accountId, id, update)));
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponseDto<String> delete(@RequestAttribute Long accountId,
                                          @PathVariable Long id) {
-        accountService.delete(id);
+        accountService.delete(accountId, id);
         return ApiResponseDto.DEFAULT_OK;
     }
 }

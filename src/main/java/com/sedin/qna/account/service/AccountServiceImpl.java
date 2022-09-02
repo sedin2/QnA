@@ -5,6 +5,7 @@ import com.sedin.qna.account.model.AccountDto;
 import com.sedin.qna.account.repository.AccountRepository;
 import com.sedin.qna.exception.DuplicatedException;
 import com.sedin.qna.exception.NotFoundException;
+import com.sedin.qna.exception.PermissionToAccessException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,7 +40,9 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     @Transactional
-    public AccountDto.Response update(Long id, AccountDto.Update update) {
+    public AccountDto.Response update(Long accountId, Long id, AccountDto.Update update) {
+        checkPermissionToAccess(accountId, id);
+
         Account updated = accountRepository.findById(id)
                 .map(update::complete)
                 .orElseThrow(() -> new NotFoundException(id.toString()));
@@ -48,10 +51,18 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public void delete(Long id) {
+    public void delete(Long accountId, Long id) {
+        checkPermissionToAccess(accountId, id);
+
         Account account = accountRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(id.toString()));
 
         accountRepository.delete(account);
+    }
+
+    private static void checkPermissionToAccess(Long accountId, Long id) {
+        if (!accountId.equals(id)) {
+            throw new PermissionToAccessException();
+        }
     }
 }
