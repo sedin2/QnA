@@ -71,8 +71,12 @@ include::{snippets}/create-account/http-response.adoc[]
 
 ==== Request
 
+===== Request Header
+include::{snippets}/update-account/request-headers.adoc[]
+
 include::{snippets}/update-account/request-fields.adoc[]
 
+===== Path Parameters
 include::{snippets}/update-account/path-parameters.adoc[]
 
 ===== Request HTTP Example
@@ -94,6 +98,10 @@ include::{snippets}/update-account/http-response.adoc[]
 
 ==== Request
 
+===== Request Header
+include::{snippets}/delete-account/request-headers.adoc[]
+
+===== Path Parameters
 include::{snippets}/delete-account/path-parameters.adoc[]
 
 ===== Request HTTP Example
