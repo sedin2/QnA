@@ -29,6 +29,7 @@ import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.restdocs.payload.PayloadDocumentation;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -51,6 +52,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.payload.PayloadDocumentation.beneathPath;
@@ -63,6 +66,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AccountController.class)
@@ -329,6 +333,7 @@ class AccountControllerWebTest {
                             .andDo(document("update-account",
                                     ApiDocumentUtil.getDocumentRequest(),
                                     ApiDocumentUtil.getDocumentResponse(),
+                                    requestHeaders(headerWithName(AUTHORIZATION).description("Basic auth credentials")),
                                     pathParameters(parameterWithName("id").description("업데이트할 사용자 id")),
                                     requestFields(
                                             fieldWithPath("originalPassword").type(JsonFieldType.STRING).description("기존 비밀번호"),
@@ -370,9 +375,10 @@ class AccountControllerWebTest {
                     String requestBody = objectMapper.writeValueAsString(updateDtoWithEmptyArgument);
 
                     mockMvc.perform(patch("/api/accounts/" + EXISTED_ID)
+                                    .header(AUTHORIZATION, VALID_TOKEN)
+                                    .content(requestBody)
                                     .contentType(MediaType.APPLICATION_JSON)
-                                    .characterEncoding(StandardCharsets.UTF_8)
-                                    .content(requestBody))
+                                    .characterEncoding(StandardCharsets.UTF_8))
                             .andExpect(status().isBadRequest());
 
                     verify(accountService, never())
@@ -431,13 +437,15 @@ class AccountControllerWebTest {
                 @DisplayName("HttpStatus 200 OK를 응답한다")
                 void it_returns_httpStatus_OK() throws Exception {
                     ResultActions result = mockMvc.perform(
-                            RestDocumentationRequestBuilders.delete("/api/accounts/{id}", EXISTED_ID));
+                            RestDocumentationRequestBuilders.delete("/api/accounts/{id}", EXISTED_ID)
+                                    .header(AUTHORIZATION, VALID_TOKEN));
 
                     // Delete Account RestDocs
                     result.andExpect(status().isOk())
                             .andDo(document("delete-account",
                                     ApiDocumentUtil.getDocumentRequest(),
                                     ApiDocumentUtil.getDocumentResponse(),
+                                    requestHeaders(headerWithName(AUTHORIZATION).description("Basic auth credentials")),
                                     pathParameters(parameterWithName("id").description("삭제할 사용자 id"))
                             ));
 
