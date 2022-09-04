@@ -7,6 +7,7 @@ import com.sedin.qna.account.service.AccountService;
 import com.sedin.qna.exception.DuplicatedException;
 import com.sedin.qna.exception.InvalidTokenException;
 import com.sedin.qna.exception.NotFoundException;
+import com.sedin.qna.exception.PermissionToAccessException;
 import com.sedin.qna.interceptor.AuthenticationInterceptor;
 import com.sedin.qna.util.ApiDocumentUtil;
 import com.sedin.qna.util.DocumentFormatGenerator;
@@ -29,10 +30,8 @@ import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.payload.JsonFieldType;
-import org.springframework.restdocs.payload.PayloadDocumentation;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -66,7 +65,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AccountController.class)
@@ -74,7 +72,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureRestDocs(uriScheme = "https", uriHost = "docs.api.com")
 class AccountControllerWebTest {
 
-    private static final Long EXISTED_ID = 1L;
+    private static final Long AUTHORIZED_ID = 1L;
+    private static final Long THE_OTHER_ID = 2L;
     private static final Long NOT_EXISTED_ID = 9999L;
     private static final String PREFIX = "prefix";
     private static final String LOGIN_ID = "sedin";
@@ -151,7 +150,7 @@ class AccountControllerWebTest {
                         .build();
 
                 response = AccountDto.Response.builder()
-                        .id(EXISTED_ID)
+                        .id(AUTHORIZED_ID)
                         .loginId(LOGIN_ID)
                         .name(NAME)
                         .bornDate(BORN_DATE)
@@ -281,7 +280,7 @@ class AccountControllerWebTest {
             when(interceptor.preHandle(any(), any(), any()))
                     .then(invocation -> {
                         HttpServletRequest source = invocation.getArgument(0);
-                        source.setAttribute("accountId", EXISTED_ID);
+                        source.setAttribute("accountId", AUTHORIZED_ID);
                         return true;
                     });
         }
@@ -291,8 +290,8 @@ class AccountControllerWebTest {
         class DescribeUpdateAccount {
 
             @Nested
-            @DisplayName("존재하는 accountId와 정보로 요청이 들어오면")
-            class ContextWithExistedAccountIdAndAccountUpdateDto {
+            @DisplayName("인가된 accountId와 정보로 요청이 들어오면")
+            class ContextWithAuthorizedAccountIdAndAccountUpdateDto {
 
                 @BeforeEach
                 void prepareExistedAccountIdAndAccountUpdateDto() {
@@ -303,7 +302,7 @@ class AccountControllerWebTest {
                             .build();
 
                     response = AccountDto.Response.builder()
-                            .id(EXISTED_ID)
+                            .id(AUTHORIZED_ID)
                             .loginId(LOGIN_ID)
                             .name(NAME)
                             .bornDate(BORN_DATE)
@@ -311,7 +310,7 @@ class AccountControllerWebTest {
                             .email(PREFIX + EMAIL)
                             .build();
 
-                    given(accountService.update(eq(EXISTED_ID), eq(EXISTED_ID), any(AccountDto.Update.class))).willReturn(response);
+                    given(accountService.update(eq(AUTHORIZED_ID), eq(AUTHORIZED_ID), any(AccountDto.Update.class))).willReturn(response);
                 }
 
                 @Test
@@ -319,14 +318,13 @@ class AccountControllerWebTest {
                 void it_returns_httpStatus_OK() throws Exception {
                     String requestBody = objectMapper.writeValueAsString(updateDto);
 
-                    ResultActions result = mockMvc.perform(RestDocumentationRequestBuilders.patch("/api/accounts/{id}", EXISTED_ID)
+                    ResultActions result = mockMvc.perform(RestDocumentationRequestBuilders.patch("/api/accounts/{id}", AUTHORIZED_ID)
                                     .header(AUTHORIZATION, VALID_TOKEN)
                                     .accept(MediaType.APPLICATION_JSON)
                                     .content(requestBody)
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .characterEncoding(StandardCharsets.UTF_8)
-                            )
-                            .andDo(MockMvcResultHandlers.print());
+                            );
 
                     // Patch Account RestDocs
                     result.andExpect(status().isOk())
@@ -352,13 +350,13 @@ class AccountControllerWebTest {
                                             fieldWithPath("account.email").type(JsonFieldType.STRING).description("이메일")
                                     )));
 
-                    verify(accountService, times(1)).update(eq(EXISTED_ID), eq(EXISTED_ID), any(AccountDto.Update.class));
+                    verify(accountService, times(1)).update(eq(AUTHORIZED_ID), eq(AUTHORIZED_ID), any(AccountDto.Update.class));
                 }
             }
 
             @Nested
-            @DisplayName("존재하는 accountId와 유효하지 않은 정보로 요청이 들어오면")
-            class ContextWithExistedAccountIdAndInvalidAccountUpdateDto {
+            @DisplayName("인가된 accountId와 유효하지 않은 정보로 요청이 들어오면")
+            class ContextWithAuthorizedAccountIdAndInvalidAccountUpdateDto {
 
                 @BeforeEach
                 void prepareInvalidAccountUpdateDto() {
@@ -374,7 +372,7 @@ class AccountControllerWebTest {
                 void it_returns_httpStatus_badRequest() throws Exception {
                     String requestBody = objectMapper.writeValueAsString(updateDtoWithEmptyArgument);
 
-                    mockMvc.perform(patch("/api/accounts/" + EXISTED_ID)
+                    mockMvc.perform(patch("/api/accounts/" + AUTHORIZED_ID)
                                     .header(AUTHORIZATION, VALID_TOKEN)
                                     .content(requestBody)
                                     .contentType(MediaType.APPLICATION_JSON)
@@ -387,8 +385,41 @@ class AccountControllerWebTest {
             }
 
             @Nested
-            @DisplayName("존재하지 않은 accountId로 요청이 들어오면")
-            class ContextWithNotExistedAccountId {
+            @DisplayName("인가된 accountId와 accountId가 틀린 요청이 들어오면")
+            class ContextWithNotSameBetweenAuthorizedAccountIdAndTheOtherAccountId {
+
+                @BeforeEach
+                void prepareTheOtherAccountId() {
+                    updateDtoWithEmptyArgument = AccountDto.Update.builder()
+                            .originalPassword(PASSWORD)
+                            .newPassword(PREFIX + PASSWORD)
+                            .email(PREFIX + EMAIL)
+                            .build();
+
+                    given(accountService.update(eq(AUTHORIZED_ID), eq(THE_OTHER_ID), any(AccountDto.Update.class)))
+                            .willThrow(new PermissionToAccessException());
+                }
+
+                @Test
+                @DisplayName("HttpStatus 401 Unauthorized 응답한다")
+                void it_returns_httpStatus_unauthorized() throws Exception {
+                    String requestBody = objectMapper.writeValueAsString(updateDtoWithEmptyArgument);
+
+                    mockMvc.perform(patch("/api/accounts/" + THE_OTHER_ID)
+                                    .header(AUTHORIZATION, VALID_TOKEN)
+                                    .content(requestBody)
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .characterEncoding(StandardCharsets.UTF_8))
+                            .andExpect(status().isUnauthorized());
+
+                    verify(accountService, times(1))
+                            .update(anyLong(), anyLong(), any(AccountDto.Update.class));
+                }
+            }
+
+            @Nested
+            @DisplayName("인가된 accountId와 존재하지 않은 accountId로 요청이 들어오면")
+            class ContextWithAuthorizedAccountIdAndNotExistedAccountId {
 
                 @BeforeEach
                 void prepareNotExistedAccountId() {
@@ -398,7 +429,7 @@ class AccountControllerWebTest {
                             .email(PREFIX + EMAIL)
                             .build();
 
-                    given(accountService.update(eq(EXISTED_ID), eq(NOT_EXISTED_ID), any(AccountDto.Update.class)))
+                    given(accountService.update(eq(AUTHORIZED_ID), eq(NOT_EXISTED_ID), any(AccountDto.Update.class)))
                             .willThrow(new NotFoundException(NOT_EXISTED_ID.toString()));
                 }
 
@@ -425,19 +456,19 @@ class AccountControllerWebTest {
         class DescribeDeleteAccount {
 
             @Nested
-            @DisplayName("존재하는 accountId로 요청이 들어오면")
-            class ContextWithExistedAccountId {
+            @DisplayName("인가된 accountId로 요청이 들어오면")
+            class ContextWithAuthorizedAccountId {
 
                 @BeforeEach
-                void prepareExistedAccountId() {
-                    doNothing().when(accountService).delete(EXISTED_ID, EXISTED_ID);
+                void prepareAuthorizedAccountId() {
+                    doNothing().when(accountService).delete(AUTHORIZED_ID, AUTHORIZED_ID);
                 }
 
                 @Test
                 @DisplayName("HttpStatus 200 OK를 응답한다")
                 void it_returns_httpStatus_OK() throws Exception {
                     ResultActions result = mockMvc.perform(
-                            RestDocumentationRequestBuilders.delete("/api/accounts/{id}", EXISTED_ID)
+                            RestDocumentationRequestBuilders.delete("/api/accounts/{id}", AUTHORIZED_ID)
                                     .header(AUTHORIZATION, VALID_TOKEN));
 
                     // Delete Account RestDocs
@@ -449,7 +480,28 @@ class AccountControllerWebTest {
                                     pathParameters(parameterWithName("id").description("삭제할 사용자 id"))
                             ));
 
-                    verify(accountService, times(1)).delete(EXISTED_ID, EXISTED_ID);
+                    verify(accountService, times(1)).delete(AUTHORIZED_ID, AUTHORIZED_ID);
+                }
+            }
+
+            @Nested
+            @DisplayName("인가된 accountId와 accountId가 틀린 요청이 들어오면")
+            class ContextWithNotSameBetweenAuthorizedAccountIdAndTheOtherAccountId {
+
+                @BeforeEach
+                void prepareTheOtherAccountId() {
+                    doThrow(new PermissionToAccessException())
+                            .when(accountService).delete(AUTHORIZED_ID, THE_OTHER_ID);
+                }
+
+                @Test
+                @DisplayName("HttpStatus 401 Unauthorized를 응답한다")
+                void it_returns_httpStatus_badRequest() throws Exception {
+                    mockMvc.perform(delete("/api/accounts/" + THE_OTHER_ID)
+                                    .header(AUTHORIZATION, VALID_TOKEN))
+                            .andExpect(status().isUnauthorized());
+
+                    verify(accountService, times(1)).delete(anyLong(), anyLong());
                 }
             }
 
@@ -459,7 +511,7 @@ class AccountControllerWebTest {
 
                 @BeforeEach
                 void prepareNotExistedAccountId() {
-                    doThrow(new NotFoundException(NOT_EXISTED_ID.toString())).when(accountService).delete(EXISTED_ID, NOT_EXISTED_ID);
+                    doThrow(new NotFoundException(NOT_EXISTED_ID.toString())).when(accountService).delete(AUTHORIZED_ID, NOT_EXISTED_ID);
                 }
 
                 @Test
@@ -500,7 +552,7 @@ class AccountControllerWebTest {
 
                 String requestBody = objectMapper.writeValueAsString(updateDto);
 
-                mockMvc.perform(patch("/api/accounts/" + EXISTED_ID)
+                mockMvc.perform(patch("/api/accounts/" + AUTHORIZED_ID)
                                 .header(AUTHORIZATION, authorization)
                                 .content(requestBody)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -519,7 +571,7 @@ class AccountControllerWebTest {
             @ArgumentsSource(InvalidAccessToken.class)
             @DisplayName("HttpStatus 401 Unauthorized를 응답한다")
             void it_returns_httpStatus_Unauthorized(String authorization, String message) throws Exception {
-                mockMvc.perform(delete("/api/accounts/" + EXISTED_ID)
+                mockMvc.perform(delete("/api/accounts/" + AUTHORIZED_ID)
                                 .header(AUTHORIZATION, authorization)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .characterEncoding(StandardCharsets.UTF_8))
