@@ -5,7 +5,7 @@ import com.sedin.qna.account.model.AccountDto;
 import com.sedin.qna.account.model.Gender;
 import com.sedin.qna.account.repository.AccountRepository;
 import com.sedin.qna.exception.DuplicatedException;
-import com.sedin.qna.exception.NotFoundException;
+import com.sedin.qna.exception.PermissionToAccessException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -16,7 +16,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -63,6 +62,7 @@ class AccountServiceTest {
         accountService = new AccountServiceImpl(passwordEncoder, accountRepository);
 
         account = Account.builder()
+                .id(EXISTED_ID)
                 .loginId(LOGIN_ID)
                 .password(ENCODED_PASSWORD)
                 .name(NAME)
@@ -165,37 +165,37 @@ class AccountServiceTest {
     }
 
     @Nested
-    @DisplayName("만약 찾을 수 있는 accountId가 주어지면")
+    @DisplayName("만약 같은 accountId가 주어지면")
     class Context_with_found_accountId {
-
-        @BeforeEach
-        void prepareFoundAccount() {
-            updateDto = AccountDto.Update.builder()
-                    .originalPassword(RAW_PASSWORD)
-                    .newPassword(NEW_PASSWORD)
-                    .email(NEW_EMAIL)
-                    .build();
-
-            account = Account.builder()
-                    .password(NEW_PASSWORD)
-                    .email(NEW_EMAIL)
-                    .build();
-
-            given(accountRepository.findById(EXISTED_ID)).willReturn(Optional.of(account));
-            doNothing().when(accountRepository).delete(account);
-        }
 
         @Nested
         @DisplayName("update 메소드는")
         class Describe_update {
 
+            @BeforeEach
+            void prepareExistedAccountId() {
+                updateDto = AccountDto.Update.builder()
+                        .originalPassword(RAW_PASSWORD)
+                        .newPassword(NEW_PASSWORD)
+                        .email(NEW_EMAIL)
+                        .build();
+
+                account = Account.builder()
+                        .id(EXISTED_ID)
+                        .password(NEW_PASSWORD)
+                        .email(NEW_EMAIL)
+                        .build();
+
+                given(accountRepository.save(account)).willReturn(account);
+            }
+
             @Test
             @DisplayName("사용자를 수정하고 Account 정보를 담은 응답을 리턴한다")
             void it_returns_response_with_updated_account() {
-                response = accountService.update(EXISTED_ID, EXISTED_ID, updateDto);
+                response = accountService.update(account, EXISTED_ID, updateDto);
 
                 assertThat(response.getEmail()).isEqualTo(NEW_EMAIL);
-                verify(accountRepository, times(1)).findById(any(Long.class));
+                verify(accountRepository, times(1)).save(any(Account.class));
             }
         }
 
@@ -203,18 +203,23 @@ class AccountServiceTest {
         @DisplayName("delete 메소드는")
         class Describe_delete {
 
+            @BeforeEach
+            void prepareFoundAccount() {
+                doNothing().when(accountRepository).delete(account);
+            }
+
             @Test
             @DisplayName("사용자를 삭제한다")
             void it_deletes_account() {
-                accountService.delete(EXISTED_ID, EXISTED_ID);
+                accountService.delete(account, EXISTED_ID);
                 verify(accountRepository, times(1)).delete(any(Account.class));
             }
         }
     }
 
     @Nested
-    @DisplayName("만약 찾을 수 없는 accountId가 주어지면")
-    class Context_with_not_found_accountId {
+    @DisplayName("만약 다른 사용자 accountId가 주어지면")
+    class Context_with_the_other_accountId {
 
         @Nested
         @DisplayName("update 메소드는")
@@ -230,12 +235,11 @@ class AccountServiceTest {
             }
 
             @Test
-            @DisplayName("NotFoundException 예외를 던진다")
-            void it_returns_notFoundException() {
-                assertThatThrownBy(() -> accountService.update(NOT_EXISTED_ID, NOT_EXISTED_ID, updateDto))
-                        .isExactlyInstanceOf(NotFoundException.class);
+            @DisplayName("PermissionToAccessException 예외를 던진다")
+            void it_returns_permissionToAccessException() {
+                assertThatThrownBy(() -> accountService.update(account, NOT_EXISTED_ID, updateDto))
+                        .isExactlyInstanceOf(PermissionToAccessException.class);
 
-                verify(accountRepository, times(1)).findById(any(Long.class));
                 verify(accountRepository, never()).save(any(Account.class));
             }
         }
@@ -245,12 +249,11 @@ class AccountServiceTest {
         class Describe_delete {
 
             @Test
-            @DisplayName("NotFoundException 예외를 던진다")
+            @DisplayName("PermissionToAccessException 예외를 던진다")
             void it_returns_notFoundException() {
-                assertThatThrownBy(() -> accountService.delete(NOT_EXISTED_ID, NOT_EXISTED_ID))
-                        .isExactlyInstanceOf(NotFoundException.class);
+                assertThatThrownBy(() -> accountService.delete(account, NOT_EXISTED_ID))
+                        .isExactlyInstanceOf(PermissionToAccessException.class);
 
-                verify(accountRepository, times(1)).findById(any(Long.class));
                 verify(accountRepository, never()).delete(any(Account.class));
             }
         }
