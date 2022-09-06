@@ -1,7 +1,9 @@
 package com.sedin.qna.account.controller;
 
+import com.sedin.qna.account.model.Account;
 import com.sedin.qna.account.model.AccountDto;
 import com.sedin.qna.account.service.AccountService;
+import com.sedin.qna.common.LoginRequired;
 import com.sedin.qna.network.ApiResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -34,17 +36,19 @@ public class AccountController {
 
     @PatchMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponseDto<AccountDto.ResponseOne> update(@RequestAttribute Long accountId,
+    @LoginRequired
+    public ApiResponseDto<AccountDto.ResponseOne> update(@RequestAttribute Account account,
                                                          @PathVariable Long id,
                                                          @RequestBody @Valid AccountDto.Update update) {
-        return ApiResponseDto.OK(new AccountDto.ResponseOne(accountService.update(accountId, id, update)));
+        return ApiResponseDto.OK(new AccountDto.ResponseOne(accountService.update(account, id, update)));
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponseDto<String> delete(@RequestAttribute Long accountId,
+    @LoginRequired
+    public ApiResponseDto<String> delete(@RequestAttribute Account account,
                                          @PathVariable Long id) {
-        accountService.delete(accountId, id);
+        accountService.delete(account, id);
         return ApiResponseDto.DEFAULT_OK;
     }
 }

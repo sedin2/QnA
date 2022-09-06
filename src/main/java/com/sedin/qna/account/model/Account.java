@@ -45,7 +45,8 @@ public class Account {
     private String email;
 
     @Builder
-    private Account(String loginId, String password, String name, LocalDate bornDate, Gender gender, String email) {
+    private Account(Long id, String loginId, String password, String name, LocalDate bornDate, Gender gender, String email) {
+        this.id = id;
         this.loginId = loginId;
         this.password = password;
         this.name = name;

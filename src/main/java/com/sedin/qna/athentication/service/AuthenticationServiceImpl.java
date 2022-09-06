@@ -20,7 +20,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final AccountRepository accountRepository;
 
-    public AuthenticationServiceImpl(JwtUtil jwtUtil, PasswordEncoder passwordEncoder, AccountRepository accountRepository) {
+    public AuthenticationServiceImpl(JwtUtil jwtUtil, PasswordEncoder passwordEncoder,
+                                     AccountRepository accountRepository) {
         this.jwtUtil = jwtUtil;
         this.passwordEncoder = passwordEncoder;
         this.accountRepository = accountRepository;
@@ -39,8 +40,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public Long decodeAccessToken(String accessToken) {
-        return Long.valueOf(jwtUtil.decode(accessToken).get("accountId").toString());
+    public Account decodeAccessToken(String accessToken) {
+        Long accountId = Long.parseLong(String.valueOf(jwtUtil.decode(accessToken).get(JwtUtil.ACCOUNT_ID)));
+        return accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException(accountId.toString()));
     }
 
     @Override
