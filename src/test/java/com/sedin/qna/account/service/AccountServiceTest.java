@@ -34,9 +34,9 @@ class AccountServiceTest {
     private static final Long NOT_EXISTED_ID = 9999L;
     private static final String LOGIN_ID = "sedin";
     private static final String EXISTED_LOGIN_ID = "existed";
-    private static final String ENCODED_PASSWORD = "1e2n3c4o1d2e34";
     private static final String RAW_PASSWORD = "12341234";
     private static final String NEW_PASSWORD = "newPassword";
+    private static final String ENCODING_PASSWORD = "{bcrypt}$2a$10$yamrqEu34.7AQN50aInswukKIi4Ir.a.9d2tZ0YzIXgxZhdI4Nhki\n";
     private static final String NAME = "LeeSeJin";
     private static final LocalDate BORN_DATE = LocalDate.of(1994, 8, 30);
     private static final String EMAIL = "sejin@email.com";
@@ -64,7 +64,7 @@ class AccountServiceTest {
         account = Account.builder()
                 .id(EXISTED_ID)
                 .loginId(LOGIN_ID)
-                .password(ENCODED_PASSWORD)
+                .password(ENCODING_PASSWORD)
                 .name(NAME)
                 .bornDate(BORN_DATE)
                 .gender(Gender.MALE)
@@ -92,6 +92,7 @@ class AccountServiceTest {
                         .build();
 
                 given(accountRepository.save(any(Account.class))).willReturn(account);
+                given(passwordEncoder.encode(RAW_PASSWORD)).willReturn(ENCODING_PASSWORD);
             }
 
             @Test
@@ -104,6 +105,7 @@ class AccountServiceTest {
                 assertThat(response.getPassword()).isNotEqualTo(RAW_PASSWORD);
 
                 verify(accountRepository, times(1)).save(any(Account.class));
+                verify(passwordEncoder, times(1)).encode(RAW_PASSWORD);
             }
         }
 
@@ -186,7 +188,7 @@ class AccountServiceTest {
                         .email(NEW_EMAIL)
                         .build();
 
-//                given(accountRepository.save(account)).willReturn(account);
+                given(passwordEncoder.encode(NEW_PASSWORD)).willReturn(ENCODING_PASSWORD);
             }
 
             @Test
@@ -195,7 +197,9 @@ class AccountServiceTest {
                 response = accountService.update(account, EXISTED_ID, updateDto);
 
                 assertThat(response.getEmail()).isEqualTo(NEW_EMAIL);
-//                verify(accountRepository, times(1)).save(any(Account.class));
+                assertThat(response.getPassword()).isNotEqualTo(NEW_PASSWORD);
+
+                verify(passwordEncoder, times(1)).encode(NEW_PASSWORD);
             }
         }
 
