@@ -13,6 +13,8 @@ import java.security.Key;
 
 @Component
 public class JwtUtil {
+
+    public final static String ACCOUNT_ID = "accountId";
     private final Key key;
 
     public JwtUtil(@Value("${jwt.secret}") String secret) {
@@ -21,7 +23,7 @@ public class JwtUtil {
 
     public String encode(Long accountId) {
         return Jwts.builder()
-                .claim("accountId", accountId)
+                .claim(ACCOUNT_ID, accountId)
                 .signWith(key)
                 .compact();
     }

@@ -1,8 +1,10 @@
 package com.sedin.qna.interceptor;
 
+import com.sedin.qna.account.model.Account;
 import com.sedin.qna.athentication.service.AuthenticationService;
-import org.springframework.http.HttpMethod;
+import com.sedin.qna.common.LoginRequired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
@@ -11,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 @Component
 public class AuthenticationInterceptor implements HandlerInterceptor {
 
-    private final String ACCOUNT_ID = "accountId";
+    private final String ACCOUNT = "account";
     private final String AUTHORIZATION = "Authorization";
 
     private final AuthenticationService authenticationService;
@@ -24,15 +26,18 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
                              Object handler) throws Exception {
 
-        if (request.getRequestURI().startsWith("/api/accounts") && request.getMethod().equals(HttpMethod.POST.toString())) {
-            return true;
+        if (handler instanceof HandlerMethod) {
+            HandlerMethod handlerMethod = (HandlerMethod) handler;
+            if (!handlerMethod.hasMethodAnnotation(LoginRequired.class)) {
+                return true;
+            }
         }
 
         String authorization = request.getHeader(AUTHORIZATION);
         String accessToken = authenticationService.getAccessToken(authorization);
-        Long accountId = authenticationService.decodeAccessToken(accessToken);
+        Account account = authenticationService.decodeAccessToken(accessToken);
 
-        request.setAttribute(ACCOUNT_ID, accountId);
+        request.setAttribute(ACCOUNT, account);
 
         return true;
     }
