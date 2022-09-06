@@ -1,6 +1,7 @@
 package com.sedin.qna.account.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sedin.qna.account.model.Account;
 import com.sedin.qna.account.model.AccountDto;
 import com.sedin.qna.account.model.Gender;
 import com.sedin.qna.account.service.AccountService;
@@ -100,6 +101,7 @@ class AccountControllerWebTest {
     @MockBean
     private AuthenticationInterceptor interceptor;
 
+    private Account authenticatedAccount;
     private AccountDto.Create createDto;
     private AccountDto.Create registeredDto;
     private AccountDto.Create createDtoWithEmptyArgument;
@@ -125,6 +127,15 @@ class AccountControllerWebTest {
         this.mockMvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(documentationConfiguration(restDocumentation))
+                .build();
+
+        authenticatedAccount = Account.builder()
+                .loginId(LOGIN_ID)
+                .password(PASSWORD)
+                .name(NAME)
+                .email(EMAIL)
+                .gender(Gender.MALE)
+                .bornDate(BORN_DATE)
                 .build();
 
         when(interceptor.preHandle(any(), any(), any())).thenReturn(true);
@@ -280,7 +291,7 @@ class AccountControllerWebTest {
             when(interceptor.preHandle(any(), any(), any()))
                     .then(invocation -> {
                         HttpServletRequest source = invocation.getArgument(0);
-                        source.setAttribute("accountId", AUTHORIZED_ID);
+                        source.setAttribute("account", authenticatedAccount);
                         return true;
                     });
         }
@@ -310,7 +321,8 @@ class AccountControllerWebTest {
                             .email(PREFIX + EMAIL)
                             .build();
 
-                    given(accountService.update(eq(AUTHORIZED_ID), eq(AUTHORIZED_ID), any(AccountDto.Update.class))).willReturn(response);
+                    given(accountService.update(eq(authenticatedAccount), eq(AUTHORIZED_ID), any(AccountDto.Update.class)))
+                            .willReturn(response);
                 }
 
                 @Test
@@ -350,7 +362,7 @@ class AccountControllerWebTest {
                                             fieldWithPath("account.email").type(JsonFieldType.STRING).description("이메일")
                                     )));
 
-                    verify(accountService, times(1)).update(eq(AUTHORIZED_ID), eq(AUTHORIZED_ID), any(AccountDto.Update.class));
+                    verify(accountService, times(1)).update(eq(authenticatedAccount), eq(AUTHORIZED_ID), any(AccountDto.Update.class));
                 }
             }
 
@@ -380,7 +392,7 @@ class AccountControllerWebTest {
                             .andExpect(status().isBadRequest());
 
                     verify(accountService, never())
-                            .update(anyLong(), anyLong(), any(AccountDto.Update.class));
+                            .update(any(Account.class), anyLong(), any(AccountDto.Update.class));
                 }
             }
 
@@ -396,7 +408,7 @@ class AccountControllerWebTest {
                             .email(PREFIX + EMAIL)
                             .build();
 
-                    given(accountService.update(eq(AUTHORIZED_ID), eq(THE_OTHER_ID), any(AccountDto.Update.class)))
+                    given(accountService.update(eq(authenticatedAccount), eq(THE_OTHER_ID), any(AccountDto.Update.class)))
                             .willThrow(new PermissionToAccessException());
                 }
 
@@ -413,7 +425,7 @@ class AccountControllerWebTest {
                             .andExpect(status().isUnauthorized());
 
                     verify(accountService, times(1))
-                            .update(anyLong(), anyLong(), any(AccountDto.Update.class));
+                            .update(any(Account.class), anyLong(), any(AccountDto.Update.class));
                 }
             }
 
@@ -429,7 +441,7 @@ class AccountControllerWebTest {
                             .email(PREFIX + EMAIL)
                             .build();
 
-                    given(accountService.update(eq(AUTHORIZED_ID), eq(NOT_EXISTED_ID), any(AccountDto.Update.class)))
+                    given(accountService.update(eq(authenticatedAccount), eq(NOT_EXISTED_ID), any(AccountDto.Update.class)))
                             .willThrow(new NotFoundException(NOT_EXISTED_ID.toString()));
                 }
 
@@ -446,7 +458,7 @@ class AccountControllerWebTest {
                             .andExpect(status().isBadRequest());
 
                     verify(accountService, times(1))
-                            .update(anyLong(), anyLong(), any(AccountDto.Update.class));
+                            .update(any(Account.class), anyLong(), any(AccountDto.Update.class));
                 }
             }
         }
@@ -461,7 +473,7 @@ class AccountControllerWebTest {
 
                 @BeforeEach
                 void prepareAuthorizedAccountId() {
-                    doNothing().when(accountService).delete(AUTHORIZED_ID, AUTHORIZED_ID);
+                    doNothing().when(accountService).delete(authenticatedAccount, AUTHORIZED_ID);
                 }
 
                 @Test
@@ -480,7 +492,7 @@ class AccountControllerWebTest {
                                     pathParameters(parameterWithName("id").description("삭제할 사용자 id"))
                             ));
 
-                    verify(accountService, times(1)).delete(AUTHORIZED_ID, AUTHORIZED_ID);
+                    verify(accountService, times(1)).delete(authenticatedAccount, AUTHORIZED_ID);
                 }
             }
 
@@ -491,7 +503,7 @@ class AccountControllerWebTest {
                 @BeforeEach
                 void prepareTheOtherAccountId() {
                     doThrow(new PermissionToAccessException())
-                            .when(accountService).delete(AUTHORIZED_ID, THE_OTHER_ID);
+                            .when(accountService).delete(authenticatedAccount, THE_OTHER_ID);
                 }
 
                 @Test
@@ -501,7 +513,7 @@ class AccountControllerWebTest {
                                     .header(AUTHORIZATION, VALID_TOKEN))
                             .andExpect(status().isUnauthorized());
 
-                    verify(accountService, times(1)).delete(anyLong(), anyLong());
+                    verify(accountService, times(1)).delete(any(Account.class), anyLong());
                 }
             }
 
@@ -511,7 +523,9 @@ class AccountControllerWebTest {
 
                 @BeforeEach
                 void prepareNotExistedAccountId() {
-                    doThrow(new NotFoundException(NOT_EXISTED_ID.toString())).when(accountService).delete(AUTHORIZED_ID, NOT_EXISTED_ID);
+                    doThrow(new NotFoundException(NOT_EXISTED_ID.toString()))
+                            .when(accountService)
+                            .delete(authenticatedAccount, NOT_EXISTED_ID);
                 }
 
                 @Test
@@ -521,7 +535,7 @@ class AccountControllerWebTest {
                                     .header(AUTHORIZATION, VALID_TOKEN))
                             .andExpect(status().isBadRequest());
 
-                    verify(accountService, times(1)).delete(anyLong(), anyLong());
+                    verify(accountService, times(1)).delete(any(Account.class), anyLong());
                 }
             }
         }
@@ -559,7 +573,7 @@ class AccountControllerWebTest {
                                 .characterEncoding(StandardCharsets.UTF_8))
                         .andExpect(status().isUnauthorized());
 
-                verify(accountService, never()).update(anyLong(), anyLong(), any(AccountDto.Update.class));
+                verify(accountService, never()).update(any(Account.class), anyLong(), any(AccountDto.Update.class));
             }
         }
 
@@ -577,7 +591,7 @@ class AccountControllerWebTest {
                                 .characterEncoding(StandardCharsets.UTF_8))
                         .andExpect(status().isUnauthorized());
 
-                verify(accountService, never()).delete(anyLong(), anyLong());
+                verify(accountService, never()).delete(any(Account.class), anyLong());
             }
         }
     }
