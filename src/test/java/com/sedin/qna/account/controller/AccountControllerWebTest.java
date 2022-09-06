@@ -27,6 +27,7 @@ import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDoc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
@@ -97,6 +98,9 @@ class AccountControllerWebTest {
 
     @MockBean
     private AccountService accountService;
+
+    @MockBean
+    private OpenEntityManagerInViewInterceptor openEntityManagerInViewInterceptor;
 
     @MockBean
     private AuthenticationInterceptor interceptor;

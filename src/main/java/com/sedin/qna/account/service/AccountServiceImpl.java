@@ -41,8 +41,8 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public AccountDto.Response update(Account account, Long id, AccountDto.Update update) {
         checkPermissionToAccess(account.getId(), id);
-        Account updated = accountRepository.save(update.complete(account));
-        return AccountDto.Response.of(updated);
+        String encodedPassword = passwordEncoder.encode(update.getNewPassword());
+        return AccountDto.Response.of(update.complete(encodedPassword, account));
     }
 
     @Override
