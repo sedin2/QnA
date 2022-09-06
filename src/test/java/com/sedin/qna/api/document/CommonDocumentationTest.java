@@ -6,6 +6,7 @@ import com.sedin.qna.athentication.service.AuthenticationService;
 import com.sedin.qna.network.ApiResponseCode;
 import com.sedin.qna.util.CustomResponseFieldsSnippet;
 import com.sedin.qna.util.EnumType;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,17 +14,22 @@ import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDoc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor;
+import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.restdocs.payload.PayloadSubsectionExtractor;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Arrays;
 import java.util.Map;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.payload.PayloadDocumentation.beneathPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath;
@@ -40,8 +46,22 @@ public class CommonDocumentationTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private WebApplicationContext context;
+
     @MockBean
     private AuthenticationService authenticationService;
+
+    @MockBean
+    private OpenEntityManagerInViewInterceptor openEntityManagerInViewInterceptor;
+
+    @BeforeEach
+    void prepare(RestDocumentationContextProvider restDocumentation) {
+        this.mockMvc = MockMvcBuilders
+                .webAppContextSetup(context)
+                .apply(documentationConfiguration(restDocumentation))
+                .build();
+    }
 
     @Test
     void common() throws Exception {
