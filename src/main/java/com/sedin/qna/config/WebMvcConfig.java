@@ -3,7 +3,6 @@ package com.sedin.qna.config;
 import com.sedin.qna.interceptor.AuthenticationInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -23,11 +22,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Bean
     public WebMvcConfigurer webMvcConfigurerInterceptors() {
-        return new WebConfigInterceptors(openEntityManagerInViewInterceptor(), authenticationInterceptor);
-    }
-
-    @Bean
-    public OpenEntityManagerInViewInterceptor openEntityManagerInViewInterceptor() {
-        return new OpenEntityManagerInViewInterceptor();
+        return new WebConfigInterceptors(authenticationInterceptor);
     }
 }

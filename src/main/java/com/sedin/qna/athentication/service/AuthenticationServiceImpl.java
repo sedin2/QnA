@@ -10,8 +10,10 @@ import com.sedin.qna.exception.PasswordIncorrectException;
 import com.sedin.qna.util.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional(readOnly = true)
 public class AuthenticationServiceImpl implements AuthenticationService {
 
     private final String BEARER = "Bearer ";
