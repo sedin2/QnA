@@ -1,7 +1,7 @@
 package com.sedin.qna.article.model;
 
 import com.sedin.qna.account.model.Account;
-import lombok.AllArgsConstructor;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,11 +16,9 @@ import javax.persistence.Table;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "Article")
 @Getter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@Table(name = "Article")
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Article {
 
     @Id
@@ -49,4 +47,31 @@ public class Article {
     @ManyToOne
     @JoinColumn(name = "account_id")
     private Account account;
+
+    @Builder
+    private Article(String title, String content, LocalDateTime createdAt, String createdBy,
+                    LocalDateTime modifiedAt, String modifiedBy, Account account) {
+        this.title = title;
+        this.content = content;
+        this.createdAt = createdAt;
+        this.createdBy = createdBy;
+        this.modifiedAt = modifiedAt;
+        this.modifiedBy = modifiedBy;
+        this.account = account;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
+        createdAt = LocalDateTime.now();
+        createdBy = account.getName();
+        modifiedAt = LocalDateTime.now();
+        modifiedBy = account.getName();
+    }
+
+    public Article update(String title, String content) {
+        this.title = title;
+        this.content = content;
+
+        return this;
+    }
 }
