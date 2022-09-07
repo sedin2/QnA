@@ -85,10 +85,6 @@ public class AccountDto {
             this.newPassword = newPassword;
             this.email = email;
         }
-
-        public Account complete(String encodedPassword, Account account) {
-            return account.updatePasswordAndEmail(encodedPassword, email);
-        }
     }
 
     @Getter
