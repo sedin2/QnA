@@ -71,14 +71,17 @@ public class ArticleDto {
         private Long id;
         private String title;
         private String content;
+        private String author;
         private LocalDateTime createdAt;
         private LocalDateTime modifiedAt;
 
         @Builder
-        private Response(Long id, String title, String content, LocalDateTime createdAt, LocalDateTime modifiedAt) {
+        private Response(Long id, String title, String content, String author,
+                         LocalDateTime createdAt, LocalDateTime modifiedAt) {
             this.id = id;
             this.title = title;
             this.content = content;
+            this.author = author;
             this.createdAt = createdAt;
             this.modifiedAt = modifiedAt;
         }
@@ -88,6 +91,7 @@ public class ArticleDto {
                     .id(article.getId())
                     .title(article.getTitle())
                     .content(article.getContent())
+                    .author(article.getAccount().getName())
                     .createdAt(article.getCreatedAt())
                     .modifiedAt(article.getModifiedAt())
                     .build();
