@@ -14,13 +14,11 @@ class CommentTest {
 
         // when
         Comment comment = Comment.builder()
-                .id(1L)
                 .content(CONTENT)
                 .build();
 
         // then
         assertThat(comment).isNotNull();
-        assertThat(comment.getId()).isEqualTo(1L);
         assertThat(comment.getContent()).isEqualTo(CONTENT);
     }
 }

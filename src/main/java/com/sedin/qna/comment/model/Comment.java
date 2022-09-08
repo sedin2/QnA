@@ -2,7 +2,8 @@ package com.sedin.qna.comment.model;
 
 import com.sedin.qna.account.model.Account;
 import com.sedin.qna.article.model.Article;
-import lombok.AllArgsConstructor;
+import com.sedin.qna.common.model.BaseTimeEntity;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,15 +15,13 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.time.LocalDateTime;
+
 
 @Entity
-@Table(name = "Comment")
 @Getter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class Comment {
+@Table(name = "Comment")
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class Comment extends BaseTimeEntity {
 
     @Id
     @GeneratedValue
@@ -32,18 +31,6 @@ public class Comment {
     @Column(nullable = false, length = 1000)
     private String content;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "created_by", nullable = false)
-    private String createdBy;
-
-    @Column(name = "modified_at", nullable = false)
-    private LocalDateTime modifiedAt;
-
-    @Column(name = "modified_by", nullable = false)
-    private String modifiedBy;
-
     @ManyToOne
     @JoinColumn(name = "article_id")
     private Article article;
@@ -51,4 +38,11 @@ public class Comment {
     @ManyToOne
     @JoinColumn(name = "account_id")
     private Account account;
+
+    @Builder
+    private Comment(String content, Article article, Account account) {
+        this.content = content;
+        this.article = article;
+        this.account = account;
+    }
 }

@@ -20,10 +20,6 @@ public class ArticleDto {
         private String title;
         @NotBlank
         private String content;
-        private LocalDateTime createdAt;
-        private String createdBy;
-        private LocalDateTime modifiedAt;
-        private String modifiedBy;
         private Account account;
 
         private Create() {
@@ -31,14 +27,9 @@ public class ArticleDto {
         }
 
         @Builder
-        private Create(String title, String content, LocalDateTime createdAt, String createdBy,
-                      LocalDateTime modifiedAt, String modifiedBy, Account account) {
+        private Create(String title, String content, Account account) {
             this.title = title;
             this.content = content;
-            this.createdAt = createdAt;
-            this.createdBy = createdBy;
-            this.modifiedAt = modifiedAt;
-            this.modifiedBy = modifiedBy;
             this.account = account;
         }
 
@@ -46,10 +37,6 @@ public class ArticleDto {
             return Article.builder()
                     .title(title)
                     .content(content)
-                    .createdAt(createdAt)
-                    .createdBy(createdBy)
-                    .modifiedAt(modifiedAt)
-                    .modifiedBy(modifiedBy)
                     .account(account)
                     .build();
         }
@@ -85,20 +72,15 @@ public class ArticleDto {
         private String title;
         private String content;
         private LocalDateTime createdAt;
-        private String createdBy;
         private LocalDateTime modifiedAt;
-        private String modifiedBy;
 
         @Builder
-        private Response(Long id, String title, String content,
-                         LocalDateTime createdAt, String createdBy, LocalDateTime modifiedAt, String modifiedBy) {
+        private Response(Long id, String title, String content, LocalDateTime createdAt, LocalDateTime modifiedAt) {
             this.id = id;
             this.title = title;
             this.content = content;
             this.createdAt = createdAt;
-            this.createdBy = createdBy;
             this.modifiedAt = modifiedAt;
-            this.modifiedBy = modifiedBy;
         }
 
         public static Response of(Article article) {
@@ -107,9 +89,7 @@ public class ArticleDto {
                     .title(article.getTitle())
                     .content(article.getContent())
                     .createdAt(article.getCreatedAt())
-                    .createdBy(article.getModifiedBy())
                     .modifiedAt(article.getModifiedAt())
-                    .modifiedBy(article.getModifiedBy())
                     .build();
         }
     }
