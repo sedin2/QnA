@@ -43,10 +43,6 @@ public class Article extends BaseTimeEntity {
         this.account = account;
     }
 
-    public void setAccount(Account account) {
-        this.account = account;
-    }
-
     public Article update(String title, String content) {
         this.title = title;
         this.content = content;

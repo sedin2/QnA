@@ -24,8 +24,7 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     public ArticleDto.ResponseDetail create(Account account, ArticleDto.Create create) {
-        Article article = create.toEntity();
-        article.setAccount(account);
+        Article article = create.toEntity(account);
         return ArticleDto.ResponseDetail.of(articleRepository.save(article));
     }
 
