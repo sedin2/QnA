@@ -28,13 +28,12 @@ public class ArticleDto {
         }
 
         @Builder
-        private Create(String title, String content, Account account) {
+        private Create(String title, String content) {
             this.title = title;
             this.content = content;
-            this.account = account;
         }
 
-        public Article toEntity() {
+        public Article toEntity(Account account) {
             return Article.builder()
                     .title(title)
                     .content(content)
