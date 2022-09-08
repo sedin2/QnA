@@ -1,5 +1,6 @@
 package com.sedin.qna.article.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.sedin.qna.account.model.Account;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -70,14 +71,47 @@ public class ArticleDto {
 
         private Long id;
         private String title;
-        private String content;
         private String author;
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
         private LocalDateTime createdAt;
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
         private LocalDateTime modifiedAt;
 
         @Builder
-        private Response(Long id, String title, String content, String author,
-                         LocalDateTime createdAt, LocalDateTime modifiedAt) {
+        private Response(Long id, String title, String author, LocalDateTime createdAt, LocalDateTime modifiedAt) {
+            this.id = id;
+            this.title = title;
+            this.author = author;
+            this.createdAt = createdAt;
+            this.modifiedAt = modifiedAt;
+        }
+
+        public static Response of(Article article) {
+            return Response.builder()
+                    .id(article.getId())
+                    .title(article.getTitle())
+                    .author(article.getAccount().getName())
+                    .createdAt(article.getCreatedAt())
+                    .modifiedAt(article.getModifiedAt())
+                    .build();
+        }
+    }
+
+    @Getter
+    public static class ResponseDetail {
+
+        private Long id;
+        private String title;
+        private String content;
+        private String author;
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
+        private LocalDateTime createdAt;
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
+        private LocalDateTime modifiedAt;
+
+        @Builder
+        private ResponseDetail(Long id, String title, String content, String author,
+                               LocalDateTime createdAt, LocalDateTime modifiedAt) {
             this.id = id;
             this.title = title;
             this.content = content;
@@ -86,8 +120,8 @@ public class ArticleDto {
             this.modifiedAt = modifiedAt;
         }
 
-        public static Response of(Article article) {
-            return Response.builder()
+        public static ResponseDetail of(Article article) {
+            return ResponseDetail.builder()
                     .id(article.getId())
                     .title(article.getTitle())
                     .content(article.getContent())
@@ -101,9 +135,9 @@ public class ArticleDto {
     @Getter
     public static class ResponseOne {
 
-        private Response article;
+        private ResponseDetail article;
 
-        public ResponseOne(Response article) {
+        public ResponseOne(ResponseDetail article) {
             this.article = article;
         }
     }

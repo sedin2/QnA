@@ -23,10 +23,10 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public ArticleDto.Response create(Account account, ArticleDto.Create create) {
+    public ArticleDto.ResponseDetail create(Account account, ArticleDto.Create create) {
         Article article = create.toEntity();
         article.setAccount(account);
-        return ArticleDto.Response.of(articleRepository.save(article));
+        return ArticleDto.ResponseDetail.of(articleRepository.save(article));
     }
 
     @Override
@@ -39,16 +39,16 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     @Transactional(readOnly = true)
-    public ArticleDto.Response findById(Long id) {
-        return ArticleDto.Response.of(findArticle(id));
+    public ArticleDto.ResponseDetail findById(Long id) {
+        return ArticleDto.ResponseDetail.of(findArticle(id));
     }
 
     @Override
-    public ArticleDto.Response update(Account account, Long id, ArticleDto.Update update) {
+    public ArticleDto.ResponseDetail update(Account account, Long id, ArticleDto.Update update) {
         Article article = findArticle(id);
         checkPermissionBetweenAccountAndAuthor(account, article.getAccount());
 
-        return ArticleDto.Response.of(update.apply(article));
+        return ArticleDto.ResponseDetail.of(update.apply(article));
     }
 
     @Override
