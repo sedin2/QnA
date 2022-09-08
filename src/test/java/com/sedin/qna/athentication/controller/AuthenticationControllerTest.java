@@ -15,8 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
-import org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.payload.JsonFieldType;
@@ -42,6 +42,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AuthenticationController.class)
+@MockBean(JpaMetamodelMappingContext.class)
 @ExtendWith({RestDocumentationExtension.class})
 @AutoConfigureRestDocs(uriScheme = "https", uriHost = "docs.api.com")
 class AuthenticationControllerTest {
@@ -63,9 +64,6 @@ class AuthenticationControllerTest {
 
     @MockBean
     private AuthenticationService authenticationService;
-
-    @MockBean
-    private OpenEntityManagerInViewInterceptor openEntityManagerInViewInterceptor;
 
     private AccountDto.Login login;
 

@@ -13,8 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
-import org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.payload.FieldDescriptor;
@@ -40,6 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @AutoConfigureRestDocs
 @WebMvcTest(RestDocsController.class)
+@MockBean(classes = {JpaMetamodelMappingContext.class, AuthenticationService.class})
 @ExtendWith({RestDocumentationExtension.class})
 public class CommonDocumentationTest {
 
@@ -48,12 +49,6 @@ public class CommonDocumentationTest {
 
     @Autowired
     private WebApplicationContext context;
-
-    @MockBean
-    private AuthenticationService authenticationService;
-
-    @MockBean
-    private OpenEntityManagerInViewInterceptor openEntityManagerInViewInterceptor;
 
     @BeforeEach
     void prepare(RestDocumentationContextProvider restDocumentation) {
