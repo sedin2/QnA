@@ -1,0 +1,151 @@
+ifndef::snippets[]
+:snippets: ../build/generated-snippets
+endif::[]
+= API Document
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 4
+:sectlinks:
+
+=== link:./index.html[Home]
+
+[[introduction]]
+== 소개
+
+게시글 API
+
+[[common]]
+== 공통 사항
+
+=== Common Response
+
+include::{snippets}/common/custom-response-fields.adoc[]
+
+include::{snippets}/common/custom-response-fields-apiResponseCodes.adoc[]
+
+
+&#160;
+
+
+== 게시글 API
+
+[[Article-create]]
+=== 추가
+
+==== Request
+
+include::{snippets}/create-article/request-headers.adoc[]
+
+include::{snippets}/create-article/request-fields.adoc[]
+
+===== Request HTTP Example
+
+include::{snippets}/create-article/http-request.adoc[]
+
+==== Response
+
+include::{snippets}/create-article/response-fields-data.adoc[]
+
+===== Response HTTP Example
+
+include::{snippets}/create-article/http-response.adoc[]
+
+&#160;
+
+[[Article-read-all]]
+=== 모두 보기
+
+==== Request
+
+include::{snippets}/create-article/request-headers.adoc[]
+
+include::{snippets}/create-article/request-fields.adoc[]
+
+===== Request HTTP Example
+
+include::{snippets}/create-article/http-request.adoc[]
+
+==== Response
+
+include::{snippets}/create-article/response-fields-data.adoc[]
+
+===== Response HTTP Example
+
+include::{snippets}/create-article/http-response.adoc[]
+
+&#160;
+
+[[Article-read-detail]]
+=== 상세 보기
+
+==== Request
+
+include::{snippets}/create-article/request-headers.adoc[]
+
+include::{snippets}/create-article/request-fields.adoc[]
+
+===== Request HTTP Example
+
+include::{snippets}/create-article/http-request.adoc[]
+
+==== Response
+
+include::{snippets}/create-article/response-fields-data.adoc[]
+
+===== Response HTTP Example
+
+include::{snippets}/create-article/http-response.adoc[]
+
+&#160;
+
+[[Article-update]]
+=== 수정
+
+==== Request
+
+===== Request Header
+include::{snippets}/update-article/request-headers.adoc[]
+
+include::{snippets}/update-article/request-fields.adoc[]
+
+===== Path Parameters
+include::{snippets}/update-article/path-parameters.adoc[]
+
+===== Request HTTP Example
+
+include::{snippets}/update-article/http-request.adoc[]
+
+==== Response
+
+include::{snippets}/update-article/response-fields-data.adoc[]
+
+===== Response HTTP Example
+
+include::{snippets}/update-article/http-response.adoc[]
+
+&#160;
+
+[[Article-delete]]
+=== 삭제
+
+==== Request
+
+===== Request Header
+include::{snippets}/delete-article/request-headers.adoc[]
+
+===== Path Parameters
+include::{snippets}/delete-article/path-parameters.adoc[]
+
+===== Request HTTP Example
+
+include::{snippets}/delete-article/http-request.adoc[]
+
+==== Response
+
+===== Response HTTP Example
+
+include::{snippets}/delete-article/http-response.adoc[]
+
+&#160;

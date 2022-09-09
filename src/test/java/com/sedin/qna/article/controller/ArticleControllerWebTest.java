@@ -6,6 +6,8 @@ import com.sedin.qna.article.model.ArticleDto;
 import com.sedin.qna.article.service.ArticleService;
 import com.sedin.qna.interceptor.AuthenticationInterceptor;
 import com.sedin.qna.network.ApiResponseCode;
+import com.sedin.qna.util.ApiDocumentUtil;
+import com.sedin.qna.util.DocumentFormatGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +19,7 @@ import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
+import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -29,15 +32,27 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.payload.PayloadDocumentation.beneathPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -125,7 +140,30 @@ class ArticleControllerWebTest {
         result.andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.article.id").value(1L))
                 .andExpect(jsonPath("$.data.article.title").value(TITLE))
-                .andExpect(jsonPath("$.data.article.content").value(CONTENT));
+                .andExpect(jsonPath("$.data.article.content").value(CONTENT))
+                .andDo(document("create-article",
+                        ApiDocumentUtil.getDocumentRequest(),
+                        ApiDocumentUtil.getDocumentResponse(),
+                        requestHeaders(headerWithName(AUTHORIZATION).description("Basic auth credentials")),
+                        requestFields(
+                                fieldWithPath("title").type(JsonFieldType.STRING).description("제목"),
+                                fieldWithPath("content").type(JsonFieldType.STRING).description("내용")
+                        ),
+                        responseFields(
+                                beneathPath("data").withSubsectionId("data"),
+                                fieldWithPath("article.id").type(JsonFieldType.NUMBER).description("아이디"),
+                                fieldWithPath("article.title").type(JsonFieldType.STRING).description("제목"),
+                                fieldWithPath("article.content").type(JsonFieldType.STRING).description("내용"),
+                                fieldWithPath("article.author").type(JsonFieldType.STRING).description("작성자"),
+                                fieldWithPath("article.createdAt").type(JsonFieldType.STRING)
+                                        .attributes(DocumentFormatGenerator.getDateFormat())
+                                        .description("생성시간"),
+                                fieldWithPath("article.modifiedAt").type(JsonFieldType.STRING)
+                                        .attributes(DocumentFormatGenerator.getDateFormat())
+                                        .description("수정시간")
+                        )));
+
+        verify(articleService, times(1)).create(any(), any());
     }
 
     @Test
@@ -162,7 +200,24 @@ class ArticleControllerWebTest {
         result.andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.articles[0].id").value(1L))
                 .andExpect(jsonPath("$.data.articles[1].id").value(2L))
-                .andExpect(jsonPath("$.data.articles[0].content").doesNotHaveJsonPath());
+                .andExpect(jsonPath("$.data.articles[0].content").doesNotHaveJsonPath())
+                .andDo(document("read-all-articles",
+                        ApiDocumentUtil.getDocumentRequest(),
+                        ApiDocumentUtil.getDocumentResponse(),
+                        responseFields(
+                                beneathPath("data").withSubsectionId("data"),
+                                fieldWithPath("articles[].id").type(JsonFieldType.NUMBER).description("아이디"),
+                                fieldWithPath("articles[].title").type(JsonFieldType.STRING).description("제목"),
+                                fieldWithPath("articles[].author").type(JsonFieldType.STRING).description("작성자"),
+                                fieldWithPath("articles[].createdAt").type(JsonFieldType.STRING)
+                                        .attributes(DocumentFormatGenerator.getDateFormat())
+                                        .description("생성시간"),
+                                fieldWithPath("articles[].modifiedAt").type(JsonFieldType.STRING)
+                                        .attributes(DocumentFormatGenerator.getDateFormat())
+                                        .description("수정시간")
+                        )));
+
+        verify(articleService, times(1)).findAll();
     }
 
     @Test
@@ -182,15 +237,33 @@ class ArticleControllerWebTest {
                 .willReturn(detail);
 
         // when
-        ResultActions result = mockMvc.perform(get("/api/articles/" + 1L)
+        ResultActions result = mockMvc.perform(get("/api/articles/{id}", 1L)
                 .contentType(MediaType.APPLICATION_JSON)
-                .characterEncoding(StandardCharsets.UTF_8)
-                .header(AUTHORIZATION, VALID_TOKEN));
+                .characterEncoding(StandardCharsets.UTF_8));
 
         // then
         result.andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.article.id").value(1L))
-                .andExpect(jsonPath("$.data.article.content").value(CONTENT));
+                .andExpect(jsonPath("$.data.article.content").value(CONTENT))
+                .andDo(document("read-detail-article",
+                        ApiDocumentUtil.getDocumentRequest(),
+                        ApiDocumentUtil.getDocumentResponse(),
+                        pathParameters(parameterWithName("id").description("게시글 id")),
+                        responseFields(
+                                beneathPath("data").withSubsectionId("data"),
+                                fieldWithPath("article.id").type(JsonFieldType.NUMBER).description("아이디"),
+                                fieldWithPath("article.title").type(JsonFieldType.STRING).description("제목"),
+                                fieldWithPath("article.content").type(JsonFieldType.STRING).description("내용"),
+                                fieldWithPath("article.author").type(JsonFieldType.STRING).description("작성자"),
+                                fieldWithPath("article.createdAt").type(JsonFieldType.STRING)
+                                        .attributes(DocumentFormatGenerator.getDateFormat())
+                                        .description("생성시간"),
+                                fieldWithPath("article.modifiedAt").type(JsonFieldType.STRING)
+                                        .attributes(DocumentFormatGenerator.getDateFormat())
+                                        .description("수정시간")
+                        )));
+
+        verify(articleService, times(1)).findById(anyLong());
     }
 
     @Test
@@ -217,7 +290,7 @@ class ArticleControllerWebTest {
                 .willReturn(detail);
 
         // when
-        ResultActions result = mockMvc.perform(patch("/api/articles/" + 1L)
+        ResultActions result = mockMvc.perform(patch("/api/articles/{id}", 1L)
                 .content(requestBody)
                 .header(AUTHORIZATION, VALID_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -226,7 +299,32 @@ class ArticleControllerWebTest {
         // then
         result.andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.article.title").value(PREFIX + TITLE))
-                .andExpect(jsonPath("$.data.article.content").value(PREFIX + CONTENT));
+                .andExpect(jsonPath("$.data.article.content").value(PREFIX + CONTENT))
+                .andDo(document("update-article",
+                        ApiDocumentUtil.getDocumentRequest(),
+                        ApiDocumentUtil.getDocumentResponse(),
+                        requestHeaders(headerWithName(AUTHORIZATION).description("Basic auth credentials")),
+                        pathParameters(parameterWithName("id").description("게시글 id")),
+                        requestFields(
+                                fieldWithPath("title").type(JsonFieldType.STRING).description("제목"),
+                                fieldWithPath("content").type(JsonFieldType.STRING).description("내용")
+                        ),
+                        responseFields(
+                                beneathPath("data").withSubsectionId("data"),
+                                fieldWithPath("article.id").type(JsonFieldType.NUMBER).description("아이디"),
+                                fieldWithPath("article.title").type(JsonFieldType.STRING).description("제목"),
+                                fieldWithPath("article.content").type(JsonFieldType.STRING).description("내용"),
+                                fieldWithPath("article.author").type(JsonFieldType.STRING).description("작성자"),
+                                fieldWithPath("article.createdAt").type(JsonFieldType.STRING)
+                                        .attributes(DocumentFormatGenerator.getDateFormat())
+                                        .description("생성시간"),
+                                fieldWithPath("article.modifiedAt").type(JsonFieldType.STRING)
+                                        .attributes(DocumentFormatGenerator.getDateFormat())
+                                        .description("수정시간")
+                        )));
+
+        verify(articleService, times(1))
+                .update(any(Account.class), anyLong(), any(ArticleDto.Update.class));
     }
 
     @Test
@@ -238,13 +336,21 @@ class ArticleControllerWebTest {
                 .delete(authenticatedAccount, 1L);
 
         // when
-        ResultActions result = mockMvc.perform(delete("/api/articles/" + 1L)
+        ResultActions result = mockMvc.perform(delete("/api/articles/{id}", 1L)
                 .header(AUTHORIZATION, VALID_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .characterEncoding(StandardCharsets.UTF_8));
 
         // then
         result.andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value(ApiResponseCode.OK.getText()));
+                .andExpect(jsonPath("$.message").value(ApiResponseCode.OK.getText()))
+                .andDo(document("delete-article",
+                        ApiDocumentUtil.getDocumentRequest(),
+                        ApiDocumentUtil.getDocumentResponse(),
+                        requestHeaders(headerWithName(AUTHORIZATION).description("Basic auth credentials")),
+                        pathParameters(parameterWithName("id").description("게시글 id"))
+                ));
+
+        verify(articleService, times(1)).delete(any(Account.class), anyLong());
     }
 }

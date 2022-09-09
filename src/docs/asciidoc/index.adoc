@@ -1,0 +1,38 @@
+ifndef::snippets[]
+:snippets: ../build/generated-snippets
+endif::[]
+= API Document
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 4
+:sectlinks:
+
+[[introduction]]
+== 소개
+QnA Application
+
+[[common]]
+== 공통 사항
+
+API에 관계없이 아래 사항을 지켜주셔야 합니다.
+
+=== Domain
+
+|===
+| 환경 | Domain
+
+| 개발서버
+| `http://docs.api.com:8080`
+
+| 운영서버
+| `https://docs.api.com`
+|===
+
+== API 목록
+=== link:./account.html[Account API]
+
+=== link:./article.html[Article API]
+
+=== link:./comment.html[Comment API]

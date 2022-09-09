@@ -57,15 +57,15 @@ import static org.springframework.restdocs.headers.HeaderDocumentation.headerWit
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.payload.PayloadDocumentation.beneathPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -197,7 +197,7 @@ class AccountControllerWebTest {
                                         fieldWithPath("password").type(JsonFieldType.STRING).description("비밀번호"),
                                         fieldWithPath("name").type(JsonFieldType.STRING).description("이름"),
                                         fieldWithPath("bornDate").type(JsonFieldType.STRING)
-                                                .attributes(DocumentFormatGenerator.getDateFormat())
+                                                .attributes(DocumentFormatGenerator.getBornDateFormat())
                                                 .description("생년월일"),
                                         fieldWithPath("gender").type(JsonFieldType.STRING).description("성별"),
                                         fieldWithPath("email").type(JsonFieldType.STRING).description("이메일")
@@ -208,7 +208,7 @@ class AccountControllerWebTest {
                                         fieldWithPath("account.loginId").type(JsonFieldType.STRING).description("로그인 아이디"),
                                         fieldWithPath("account.name").type(JsonFieldType.STRING).description("이름"),
                                         fieldWithPath("account.bornDate").type(JsonFieldType.STRING)
-                                                .attributes(DocumentFormatGenerator.getDateFormat())
+                                                .attributes(DocumentFormatGenerator.getBornDateFormat())
                                                 .description("생년월일"),
                                         fieldWithPath("account.gender").type(JsonFieldType.STRING).description("성별"),
                                         fieldWithPath("account.email").type(JsonFieldType.STRING).description("이메일")
@@ -332,7 +332,7 @@ class AccountControllerWebTest {
                 void it_returns_httpStatus_OK() throws Exception {
                     String requestBody = objectMapper.writeValueAsString(updateDto);
 
-                    ResultActions result = mockMvc.perform(RestDocumentationRequestBuilders.patch("/api/accounts/{id}", AUTHORIZED_ID)
+                    ResultActions result = mockMvc.perform(patch("/api/accounts/{id}", AUTHORIZED_ID)
                                     .header(AUTHORIZATION, VALID_TOKEN)
                                     .accept(MediaType.APPLICATION_JSON)
                                     .content(requestBody)
@@ -358,7 +358,7 @@ class AccountControllerWebTest {
                                             fieldWithPath("account.loginId").type(JsonFieldType.STRING).description("로그인 아이디"),
                                             fieldWithPath("account.name").type(JsonFieldType.STRING).description("이름"),
                                             fieldWithPath("account.bornDate").type(JsonFieldType.STRING)
-                                                    .attributes(DocumentFormatGenerator.getDateFormat())
+                                                    .attributes(DocumentFormatGenerator.getBornDateFormat())
                                                     .description("생년월일"),
                                             fieldWithPath("account.gender").type(JsonFieldType.STRING).description("성별"),
                                             fieldWithPath("account.email").type(JsonFieldType.STRING).description("이메일")
