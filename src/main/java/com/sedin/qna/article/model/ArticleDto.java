@@ -21,7 +21,6 @@ public class ArticleDto {
         private String title;
         @NotBlank
         private String content;
-        private Account account;
 
         private Create() {
 
