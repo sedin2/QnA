@@ -37,7 +37,8 @@ public class Article extends BaseTimeEntity {
     private Account account;
 
     @Builder
-    private Article(String title, String content, Account account) {
+    private Article(Long id, String title, String content, Account account) {
+        this.id = id;
         this.title = title;
         this.content = content;
         this.account = account;
