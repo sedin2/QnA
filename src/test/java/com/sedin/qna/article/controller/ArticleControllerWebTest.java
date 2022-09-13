@@ -68,7 +68,7 @@ class ArticleControllerWebTest {
     private static final String CONTENT = "content";
     private static final String AUTHOR = "author";
     private static final String AUTHORIZATION = "Authorization";
-    private static final String VALID_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhY2NvdW50SWQiOjF9." +
+    private static final String VALID_TOKEN = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhY2NvdW50SWQiOjF9." +
             "LwF0Ms-3xGGJX9JBIrc7bzGl1gYUAq3R3gesg35BA1w";
 
     @Autowired
