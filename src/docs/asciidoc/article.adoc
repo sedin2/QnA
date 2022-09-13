@@ -59,21 +59,17 @@ include::{snippets}/create-article/http-response.adoc[]
 
 ==== Request
 
-include::{snippets}/create-article/request-headers.adoc[]
-
-include::{snippets}/create-article/request-fields.adoc[]
-
 ===== Request HTTP Example
 
-include::{snippets}/create-article/http-request.adoc[]
+include::{snippets}/read-all-articles/http-request.adoc[]
 
 ==== Response
 
-include::{snippets}/create-article/response-fields-data.adoc[]
+include::{snippets}/read-all-articles/response-fields-data.adoc[]
 
 ===== Response HTTP Example
 
-include::{snippets}/create-article/http-response.adoc[]
+include::{snippets}/read-all-articles/http-response.adoc[]
 
 &#160;
 
@@ -82,21 +78,19 @@ include::{snippets}/create-article/http-response.adoc[]
 
 ==== Request
 
-include::{snippets}/create-article/request-headers.adoc[]
-
-include::{snippets}/create-article/request-fields.adoc[]
+include::{snippets}/read-detail-article/path-parameters.adoc[]
 
 ===== Request HTTP Example
 
-include::{snippets}/create-article/http-request.adoc[]
+include::{snippets}/read-detail-article/http-request.adoc[]
 
 ==== Response
 
-include::{snippets}/create-article/response-fields-data.adoc[]
+include::{snippets}/read-detail-article/response-fields-data.adoc[]
 
 ===== Response HTTP Example
 
-include::{snippets}/create-article/http-response.adoc[]
+include::{snippets}/read-detail-article/http-response.adoc[]
 
 &#160;
 
