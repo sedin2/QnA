@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -20,7 +21,7 @@ import javax.persistence.Table;
 @Entity
 @Getter
 @Table(name = "Comment")
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Comment extends BaseTimeEntity {
 
     @Id
@@ -31,11 +32,11 @@ public class Comment extends BaseTimeEntity {
     @Column(nullable = false, length = 1000)
     private String content;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "article_id")
     private Article article;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id")
     private Account account;
 
@@ -44,5 +45,10 @@ public class Comment extends BaseTimeEntity {
         this.content = content;
         this.article = article;
         this.account = account;
+    }
+
+    public Comment update(String content) {
+        this.content = content;
+        return this;
     }
 }
