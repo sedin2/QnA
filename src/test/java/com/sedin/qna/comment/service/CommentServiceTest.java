@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -172,5 +173,29 @@ class CommentServiceTest {
         // then
         assertThat(response.getContent()).isEqualTo(PREFIX + CONTENT);
         verify(commentRepository, times(1)).findByArticleIdAndId(anyLong(), anyLong());
+    }
+
+    @Test
+    void When_Delete_Expect_Deleted_Comment() {
+
+        // given
+        Comment comment = Comment.builder()
+                .content(CONTENT)
+                .article(article)
+                .account(authenticatedAccount)
+                .build();
+
+        given(commentRepository.findByArticleIdAndId(anyLong(), anyLong())).willReturn(Optional.of(comment));
+        doNothing().when(commentRepository).delete(comment);
+
+        // when
+        commentService.delete(authenticatedAccount, ARTICLE_ID, COMMENT_ID);
+
+        // then
+        given(commentRepository.findByArticleIdAndId(ARTICLE_ID, COMMENT_ID)).willThrow(NotFoundException.class);
+        assertThatThrownBy(() -> commentService.findById(ARTICLE_ID, COMMENT_ID))
+                .isExactlyInstanceOf(NotFoundException.class);
+
+        verify(commentRepository, times(1)).delete(any());
     }
 }
