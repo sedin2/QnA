@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,6 +26,7 @@ import static org.mockito.Mockito.verify;
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
 
+    private static final Long ARTICLE_ID = 1L;
     private static final String CONTENT = "content";
     private static final String NAME = "sejin";
     private static final String PREFIX = "prefix";
@@ -39,6 +41,7 @@ class CommentServiceTest {
     private CommentService commentService;
 
     private Account authenticatedAccount;
+    private Article article;
 
     @BeforeEach
     void prepare() {
@@ -48,6 +51,13 @@ class CommentServiceTest {
                 .id(1L)
                 .name(NAME)
                 .build();
+
+        article = Article.builder()
+                .id(ARTICLE_ID)
+                .title(TITLE)
+                .content(CONTENT)
+                .account(authenticatedAccount)
+                .build();
     }
 
     @Test
@@ -56,12 +66,6 @@ class CommentServiceTest {
         // given
         CommentDto.Create create = CommentDto.Create.builder()
                 .content(CONTENT)
-                .build();
-
-        Article article = Article.builder()
-                .title(TITLE)
-                .content(CONTENT)
-                .account(authenticatedAccount)
                 .build();
 
         Comment comment = Comment.builder()
@@ -74,12 +78,39 @@ class CommentServiceTest {
         given(commentRepository.save(any())).willReturn(comment);
 
         // when
-        CommentDto.Response response = commentService.create(authenticatedAccount, 1L, create);
+        CommentDto.Response response = commentService.create(authenticatedAccount, ARTICLE_ID, create);
 
         // then
         assertThat(response.getContent()).isEqualTo(CONTENT);
         assertThat(response.getAuthor()).isEqualTo(NAME);
 
         verify(commentRepository, times(1)).save(any());
+    }
+
+    @Test
+    void When_Find_All_Expect_Comment_List() {
+
+        // given
+        List<Comment> comments = List.of(
+                Comment.builder()
+                        .content(CONTENT)
+                        .article(article)
+                        .account(authenticatedAccount)
+                        .build(),
+                Comment.builder()
+                        .content(CONTENT)
+                        .article(article)
+                        .account(authenticatedAccount)
+                        .build()
+        );
+
+        given(commentRepository.findAllByArticleId(ARTICLE_ID)).willReturn(comments);
+
+        // when
+        List<CommentDto.Response> responseList = commentService.findAll(ARTICLE_ID);
+
+        // then
+        assertThat(responseList).hasSize(2);
+        verify(commentRepository, times(1)).findAllByArticleId(anyLong());
     }
 }
