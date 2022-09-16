@@ -348,7 +348,6 @@ class CommentControllerWebTest {
                         pathParameters(
                                 parameterWithName("articleId").description("게시글 id"),
                                 parameterWithName("commentId").description("댓글 id")
-
                         )
                 ));
 
