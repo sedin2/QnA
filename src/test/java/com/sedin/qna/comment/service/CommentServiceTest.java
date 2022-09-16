@@ -6,6 +6,7 @@ import com.sedin.qna.article.repository.ArticleRepository;
 import com.sedin.qna.comment.model.Comment;
 import com.sedin.qna.comment.model.CommentDto;
 import com.sedin.qna.comment.repository.CommentRepository;
+import com.sedin.qna.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
@@ -134,5 +136,17 @@ class CommentServiceTest {
         assertThat(response.getContent()).isEqualTo(CONTENT);
         assertThat(response.getAuthor()).isEqualTo(NAME);
         verify(commentRepository, times(1)).findByArticleIdAndId(anyLong(), anyLong());
+    }
+
+    @Test
+    void When_Find_By_Not_Existed_Id_Expect_Not_Found_Exception() {
+
+        // given
+        given(commentRepository.findByArticleIdAndId(anyLong(), anyLong()))
+                .willThrow(NotFoundException.class);
+
+        // when & then
+        assertThatThrownBy(() -> commentService.findById(-1L, -1L))
+                .isExactlyInstanceOf(NotFoundException.class);
     }
 }
