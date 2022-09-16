@@ -27,6 +27,7 @@ import static org.mockito.Mockito.verify;
 class CommentServiceTest {
 
     private static final Long ARTICLE_ID = 1L;
+    private static final Long COMMENT_ID = 1L;
     private static final String CONTENT = "content";
     private static final String NAME = "sejin";
     private static final String PREFIX = "prefix";
@@ -112,5 +113,26 @@ class CommentServiceTest {
         // then
         assertThat(responseList).hasSize(2);
         verify(commentRepository, times(1)).findAllByArticleId(anyLong());
+    }
+
+    @Test
+    void When_Find_By_Id_Expect_Comment_Detail() {
+
+        // given
+        Comment comment = Comment.builder()
+                .content(CONTENT)
+                .article(article)
+                .account(authenticatedAccount)
+                .build();
+
+        given(commentRepository.findByArticleIdAndId(ARTICLE_ID, COMMENT_ID)).willReturn(Optional.of(comment));
+
+        // when
+        CommentDto.Response response = commentService.findById(ARTICLE_ID, COMMENT_ID);
+
+        // then
+        assertThat(response.getContent()).isEqualTo(CONTENT);
+        assertThat(response.getAuthor()).isEqualTo(NAME);
+        verify(commentRepository, times(1)).findByArticleIdAndId(anyLong(), anyLong());
     }
 }
