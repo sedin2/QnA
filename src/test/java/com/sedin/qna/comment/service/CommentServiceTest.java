@@ -149,4 +149,28 @@ class CommentServiceTest {
         assertThatThrownBy(() -> commentService.findById(-1L, -1L))
                 .isExactlyInstanceOf(NotFoundException.class);
     }
+
+    @Test
+    void When_Update_Expect_Updated_Comment() {
+
+        // given
+        Comment comment = Comment.builder()
+                .content(CONTENT)
+                .article(article)
+                .account(authenticatedAccount)
+                .build();
+
+        CommentDto.Update update = CommentDto.Update.builder()
+                .content(PREFIX + CONTENT)
+                .build();
+
+        given(commentRepository.findByArticleIdAndId(anyLong(), anyLong())).willReturn(Optional.of(comment));
+
+        // when
+        CommentDto.Response response = commentService.update(authenticatedAccount, ARTICLE_ID, COMMENT_ID, update);
+
+        // then
+        assertThat(response.getContent()).isEqualTo(PREFIX + CONTENT);
+        verify(commentRepository, times(1)).findByArticleIdAndId(anyLong(), anyLong());
+    }
 }
