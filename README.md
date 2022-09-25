@@ -17,7 +17,7 @@
 <details>
 <summary>DB ERD Image</summary>
 
-![image](https://user-images.githubusercontent.com/53131108/178420686-b18b2e8b-14eb-4372-b668-2fc92e6d984d.png)
+![image](https://user-images.githubusercontent.com/53131108/192137932-560dbdcb-b3cc-4bbf-88bc-24ff761b0388.png)
 
 </details>
 
