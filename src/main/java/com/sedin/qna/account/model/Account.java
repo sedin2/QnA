@@ -17,7 +17,7 @@ import java.time.LocalDate;
 @Entity
 @Getter
 @Table(name = "Account")
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Account {
 
     @Id

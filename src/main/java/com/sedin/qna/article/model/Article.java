@@ -18,7 +18,7 @@ import javax.persistence.Table;
 @Entity
 @Getter
 @Table(name = "Article")
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Article extends BaseTimeEntity {
 
     @Id

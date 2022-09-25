@@ -1,9 +1,9 @@
-package com.sedin.qna.article.controller;
+package com.sedin.qna.comment.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sedin.qna.account.model.Account;
-import com.sedin.qna.article.model.ArticleDto;
-import com.sedin.qna.article.service.ArticleService;
+import com.sedin.qna.comment.model.CommentDto;
+import com.sedin.qna.comment.service.CommentService;
 import com.sedin.qna.interceptor.AuthenticationInterceptor;
 import com.sedin.qna.network.ApiResponseCode;
 import com.sedin.qna.util.ApiDocumentUtil;
@@ -28,7 +28,6 @@ import org.springframework.web.context.WebApplicationContext;
 import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -56,18 +55,18 @@ import static org.springframework.restdocs.request.RequestDocumentation.pathPara
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(ArticleController.class)
+@WebMvcTest(CommentController.class)
 @MockBean(JpaMetamodelMappingContext.class)
 @ExtendWith({RestDocumentationExtension.class})
 @AutoConfigureRestDocs(uriScheme = "https", uriHost = "docs.api.com")
-class ArticleControllerWebTest {
+class CommentControllerWebTest {
 
     private static final Long AUTHORIZED_ID = 1L;
-    private static final String PREFIX = "prefix";
-    private static final String TITLE = "title";
-    private static final String CONTENT = "content";
-    private static final String AUTHOR = "author";
+    private static final Long ARTICLE_ID = 1L;
     private static final String AUTHORIZATION = "Authorization";
+    private static final String CONTENT = "content";
+    private static final String NAME = "author";
+    private static final String PREFIX = "prefix";
     private static final String VALID_TOKEN = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhY2NvdW50SWQiOjF9." +
             "LwF0Ms-3xGGJX9JBIrc7bzGl1gYUAq3R3gesg35BA1w";
 
@@ -83,7 +82,7 @@ class ArticleControllerWebTest {
     private AuthenticationInterceptor authenticationInterceptor;
 
     @MockBean
-    private ArticleService articleService;
+    private CommentService commentService;
 
     private Account authenticatedAccount;
 
@@ -107,30 +106,28 @@ class ArticleControllerWebTest {
     }
 
     @Test
-    void When_Request_Create_Article_With_Post_Method_Expect_HttpStatus_Is_Created() throws Exception {
+    void When_Request_Create_Comment_With_Post_Method_And_Article_Id_Expect_HttpStatus_Is_Created() throws Exception {
 
         // given
-        ArticleDto.ResponseDetail response = ArticleDto.ResponseDetail.builder()
+        CommentDto.Response response = CommentDto.Response.builder()
                 .id(1L)
-                .title(TITLE)
                 .content(CONTENT)
-                .author(AUTHOR)
+                .author(NAME)
                 .createdAt(LocalDateTime.now())
                 .modifiedAt(LocalDateTime.now())
                 .build();
 
-        ArticleDto.Create create = ArticleDto.Create.builder()
-                .title(TITLE)
+        given(commentService.create(eq(authenticatedAccount), eq(ARTICLE_ID), any(CommentDto.Create.class)))
+                .willReturn(response);
+
+        // when
+        CommentDto.Create create = CommentDto.Create.builder()
                 .content(CONTENT)
                 .build();
 
         String requestBody = objectMapper.writeValueAsString(create);
 
-        given(articleService.create(eq(authenticatedAccount), any(ArticleDto.Create.class)))
-                .willReturn(response);
-
-        // when
-        ResultActions result = mockMvc.perform(post("/api/articles")
+        ResultActions result = mockMvc.perform(post("/api/articles/{articleId}/comments", ARTICLE_ID)
                 .content(requestBody)
                 .header(AUTHORIZATION, VALID_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -138,159 +135,155 @@ class ArticleControllerWebTest {
 
         // then
         result.andExpect(status().isCreated())
-                .andExpect(jsonPath("$.data.article.id").value(1L))
-                .andExpect(jsonPath("$.data.article.title").value(TITLE))
-                .andExpect(jsonPath("$.data.article.content").value(CONTENT))
-                .andDo(document("create-article",
+                .andExpect(jsonPath("$.data.comment.id").value(1L))
+                .andExpect(jsonPath("$.data.comment.content").value(CONTENT))
+                .andExpect(jsonPath("$.data.comment.author").value(NAME))
+                .andDo(document("create-comment",
                         ApiDocumentUtil.getDocumentRequest(),
                         ApiDocumentUtil.getDocumentResponse(),
                         requestHeaders(headerWithName(AUTHORIZATION).description("Basic auth credentials")),
                         requestFields(
-                                fieldWithPath("title").type(JsonFieldType.STRING).description("제목"),
                                 fieldWithPath("content").type(JsonFieldType.STRING).description("내용")
                         ),
                         responseFields(
                                 beneathPath("data").withSubsectionId("data"),
-                                fieldWithPath("article.id").type(JsonFieldType.NUMBER).description("아이디"),
-                                fieldWithPath("article.title").type(JsonFieldType.STRING).description("제목"),
-                                fieldWithPath("article.content").type(JsonFieldType.STRING).description("내용"),
-                                fieldWithPath("article.author").type(JsonFieldType.STRING).description("작성자"),
-                                fieldWithPath("article.createdAt").type(JsonFieldType.STRING)
+                                fieldWithPath("comment.id").type(JsonFieldType.NUMBER).description("아이디"),
+                                fieldWithPath("comment.content").type(JsonFieldType.STRING).description("내용"),
+                                fieldWithPath("comment.author").type(JsonFieldType.STRING).description("작성자"),
+                                fieldWithPath("comment.createdAt").type(JsonFieldType.STRING)
                                         .attributes(DocumentFormatGenerator.getDateFormat())
                                         .description("생성시간"),
-                                fieldWithPath("article.modifiedAt").type(JsonFieldType.STRING)
+                                fieldWithPath("comment.modifiedAt").type(JsonFieldType.STRING)
                                         .attributes(DocumentFormatGenerator.getDateFormat())
                                         .description("수정시간")
                         )));
 
-        verify(articleService, times(1)).create(any(), any());
+        verify(commentService, times(1))
+                .create(eq(authenticatedAccount), eq(ARTICLE_ID), any(CommentDto.Create.class));
     }
 
     @Test
-    void When_Request_All_Articles_With_Get_Method_Expect_HttpStatus_Is_OK() throws Exception {
+    void When_Request_Read_All_Comments_With_Get_Method_Expect_HttpStatus_Is_OK() throws Exception {
 
         // given
-        List<ArticleDto.Response> list = Arrays.asList(
-                ArticleDto.Response.builder()
+        List<CommentDto.Response> responseList = List.of(CommentDto.Response.builder()
                         .id(1L)
-                        .title(TITLE)
-                        .author(AUTHOR)
+                        .content(CONTENT)
+                        .author(NAME)
                         .createdAt(LocalDateTime.now())
                         .modifiedAt(LocalDateTime.now())
                         .build(),
-                ArticleDto.Response.builder()
+                CommentDto.Response.builder()
                         .id(2L)
-                        .title(TITLE)
-                        .author(AUTHOR)
+                        .content(CONTENT)
+                        .author(NAME)
                         .createdAt(LocalDateTime.now())
                         .modifiedAt(LocalDateTime.now())
-                        .build()
-        );
+                        .build());
 
-        given(articleService.findAll())
-                .willReturn(list);
-
-        // when
-        ResultActions result = mockMvc.perform(get("/api/articles")
-                .contentType(MediaType.APPLICATION_JSON)
-                .characterEncoding(StandardCharsets.UTF_8)
-                .header(AUTHORIZATION, VALID_TOKEN));
-
-        // then
-        result.andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.articles[0].id").value(1L))
-                .andExpect(jsonPath("$.data.articles[1].id").value(2L))
-                .andExpect(jsonPath("$.data.articles[0].content").doesNotHaveJsonPath())
-                .andDo(document("read-all-articles",
-                        ApiDocumentUtil.getDocumentRequest(),
-                        ApiDocumentUtil.getDocumentResponse(),
-                        responseFields(
-                                beneathPath("data").withSubsectionId("data"),
-                                fieldWithPath("articles[].id").type(JsonFieldType.NUMBER).description("아이디"),
-                                fieldWithPath("articles[].title").type(JsonFieldType.STRING).description("제목"),
-                                fieldWithPath("articles[].author").type(JsonFieldType.STRING).description("작성자"),
-                                fieldWithPath("articles[].createdAt").type(JsonFieldType.STRING)
-                                        .attributes(DocumentFormatGenerator.getDateFormat())
-                                        .description("생성시간"),
-                                fieldWithPath("articles[].modifiedAt").type(JsonFieldType.STRING)
-                                        .attributes(DocumentFormatGenerator.getDateFormat())
-                                        .description("수정시간")
-                        )));
-
-        verify(articleService, times(1)).findAll();
-    }
-
-    @Test
-    void When_Request_Article_Detail_With_Get_Method_Expect_HttpStatus_Is_OK() throws Exception {
-
-        // given
-        ArticleDto.ResponseDetail detail = ArticleDto.ResponseDetail.builder()
-                .id(1L)
-                .title(TITLE)
-                .content(CONTENT)
-                .author(AUTHOR)
-                .createdAt(LocalDateTime.now())
-                .modifiedAt(LocalDateTime.now())
-                .build();
-
-        given(articleService.findById(1L))
-                .willReturn(detail);
+        given(commentService.findAll(ARTICLE_ID))
+                .willReturn(responseList);
 
         // when
-        ResultActions result = mockMvc.perform(get("/api/articles/{id}", 1L)
+        ResultActions result = mockMvc.perform(get("/api/articles/{articleId}/comments", ARTICLE_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .characterEncoding(StandardCharsets.UTF_8));
 
         // then
         result.andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.article.id").value(1L))
-                .andExpect(jsonPath("$.data.article.content").value(CONTENT))
-                .andDo(document("read-detail-article",
+                .andExpect(jsonPath("$.data.comments[0].id").value(1L))
+                .andExpect(jsonPath("$.data.comments[0].content").value(CONTENT))
+                .andExpect(jsonPath("$.data.comments[0].author").value(NAME))
+                .andDo(document("read-all-comments",
                         ApiDocumentUtil.getDocumentRequest(),
                         ApiDocumentUtil.getDocumentResponse(),
-                        pathParameters(parameterWithName("id").description("게시글 id")),
-                        responseFields(
-                                beneathPath("data").withSubsectionId("data"),
-                                fieldWithPath("article.id").type(JsonFieldType.NUMBER).description("아이디"),
-                                fieldWithPath("article.title").type(JsonFieldType.STRING).description("제목"),
-                                fieldWithPath("article.content").type(JsonFieldType.STRING).description("내용"),
-                                fieldWithPath("article.author").type(JsonFieldType.STRING).description("작성자"),
-                                fieldWithPath("article.createdAt").type(JsonFieldType.STRING)
-                                        .attributes(DocumentFormatGenerator.getDateFormat())
-                                        .description("생성시간"),
-                                fieldWithPath("article.modifiedAt").type(JsonFieldType.STRING)
-                                        .attributes(DocumentFormatGenerator.getDateFormat())
-                                        .description("수정시간")
-                        )));
+                        responseFields(beneathPath("data").withSubsectionId("data"))
+                                .andWithPrefix("comments.[].",
+                                        fieldWithPath("id").type(JsonFieldType.NUMBER).description("아이디"),
+                                        fieldWithPath("content").type(JsonFieldType.STRING).description("내용"),
+                                        fieldWithPath("author").type(JsonFieldType.STRING).description("작성자"),
+                                        fieldWithPath("createdAt").type(JsonFieldType.STRING)
+                                                .attributes(DocumentFormatGenerator.getDateFormat())
+                                                .description("생성시간"),
+                                        fieldWithPath("modifiedAt").type(JsonFieldType.STRING)
+                                                .attributes(DocumentFormatGenerator.getDateFormat())
+                                                .description("수정시간")
+                                )
+                ));
 
-        verify(articleService, times(1)).findById(anyLong());
+        verify(commentService, times(1)).findAll(ARTICLE_ID);
     }
 
     @Test
-    void When_Request_Update_Article_With_Patch_Method_Expect_HttpStatus_Is_OK() throws Exception {
+    void When_Request_Comment_Detail_With_Get_Method_Expect_HttpStatus_Is_OK() throws Exception {
 
         // given
-        ArticleDto.ResponseDetail detail = ArticleDto.ResponseDetail.builder()
+        CommentDto.Response response = CommentDto.Response.builder()
                 .id(1L)
-                .title(PREFIX + TITLE)
-                .content(PREFIX + CONTENT)
-                .author(AUTHOR)
+                .content(CONTENT)
+                .author(NAME)
                 .createdAt(LocalDateTime.now())
                 .modifiedAt(LocalDateTime.now())
                 .build();
 
-        ArticleDto.Update update = ArticleDto.Update.builder()
-                .title(TITLE)
-                .content(CONTENT)
+        given(commentService.findById(ARTICLE_ID, 1L))
+                .willReturn(response);
+
+        // when
+        ResultActions result = mockMvc.perform(get("/api/articles/{articleId}/comments/{commentId}",
+                ARTICLE_ID, 1L)
+                .contentType(MediaType.APPLICATION_JSON)
+                .characterEncoding(StandardCharsets.UTF_8));
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.comment.id").value(1L))
+                .andExpect(jsonPath("$.data.comment.content").value(CONTENT))
+                .andExpect(jsonPath("$.data.comment.author").value(NAME))
+                .andDo(document("read-detail-comment",
+                        ApiDocumentUtil.getDocumentRequest(),
+                        ApiDocumentUtil.getDocumentResponse(),
+                        responseFields(beneathPath("data").withSubsectionId("data"))
+                                .andWithPrefix("comment.",
+                                        fieldWithPath("id").type(JsonFieldType.NUMBER).description("아이디"),
+                                        fieldWithPath("content").type(JsonFieldType.STRING).description("내용"),
+                                        fieldWithPath("author").type(JsonFieldType.STRING).description("작성자"),
+                                        fieldWithPath("createdAt").type(JsonFieldType.STRING)
+                                                .attributes(DocumentFormatGenerator.getDateFormat())
+                                                .description("생성시간"),
+                                        fieldWithPath("modifiedAt").type(JsonFieldType.STRING)
+                                                .attributes(DocumentFormatGenerator.getDateFormat())
+                                                .description("수정시간")
+                                )
+                ));
+
+        verify(commentService, times(1)).findById(ARTICLE_ID, 1L);
+    }
+
+    @Test
+    void When_Request_Update_Comment_With_Patch_Method_Expect_HttpStatus_Is_OK() throws Exception {
+
+        // given
+        CommentDto.Response response = CommentDto.Response.builder()
+                .id(1L)
+                .content(PREFIX + CONTENT)
+                .author(NAME)
+                .createdAt(LocalDateTime.now())
+                .modifiedAt(LocalDateTime.now())
+                .build();
+
+        CommentDto.Update update = CommentDto.Update.builder()
+                .content(PREFIX + CONTENT)
                 .build();
 
         String requestBody = objectMapper.writeValueAsString(update);
 
-        given(articleService.update(eq(authenticatedAccount), eq(1L), any(ArticleDto.Update.class)))
-                .willReturn(detail);
+        given(commentService.update(eq(authenticatedAccount), eq(ARTICLE_ID), eq(1L), any(CommentDto.Update.class)))
+                .willReturn(response);
 
         // when
-        ResultActions result = mockMvc.perform(patch("/api/articles/{id}", 1L)
+        ResultActions result = mockMvc.perform(patch("/api/articles/{articleId}/comments/{commentId}",
+                ARTICLE_ID, 1L)
                 .content(requestBody)
                 .header(AUTHORIZATION, VALID_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -298,45 +291,49 @@ class ArticleControllerWebTest {
 
         // then
         result.andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.article.title").value(PREFIX + TITLE))
-                .andExpect(jsonPath("$.data.article.content").value(PREFIX + CONTENT))
-                .andDo(document("update-article",
+                .andExpect(jsonPath("$.data.comment.id").value(1L))
+                .andExpect(jsonPath("$.data.comment.content").value(PREFIX + CONTENT))
+                .andDo(document("update-comment",
                         ApiDocumentUtil.getDocumentRequest(),
                         ApiDocumentUtil.getDocumentResponse(),
                         requestHeaders(headerWithName(AUTHORIZATION).description("Basic auth credentials")),
-                        pathParameters(parameterWithName("id").description("게시글 id")),
+                        pathParameters(
+                                parameterWithName("articleId").description("게시글 id"),
+                                parameterWithName("commentId").description("댓글 id")
+                        ),
                         requestFields(
-                                fieldWithPath("title").type(JsonFieldType.STRING).description("제목"),
                                 fieldWithPath("content").type(JsonFieldType.STRING).description("내용")
                         ),
                         responseFields(
-                                beneathPath("data").withSubsectionId("data"),
-                                fieldWithPath("article.id").type(JsonFieldType.NUMBER).description("아이디"),
-                                fieldWithPath("article.title").type(JsonFieldType.STRING).description("제목"),
-                                fieldWithPath("article.content").type(JsonFieldType.STRING).description("내용"),
-                                fieldWithPath("article.author").type(JsonFieldType.STRING).description("작성자"),
-                                fieldWithPath("article.createdAt").type(JsonFieldType.STRING)
-                                        .attributes(DocumentFormatGenerator.getDateFormat())
-                                        .description("생성시간"),
-                                fieldWithPath("article.modifiedAt").type(JsonFieldType.STRING)
-                                        .attributes(DocumentFormatGenerator.getDateFormat())
-                                        .description("수정시간")
-                        )));
+                                beneathPath("data").withSubsectionId("data"))
+                                .andWithPrefix("comment.",
+                                        fieldWithPath("id").type(JsonFieldType.NUMBER).description("아이디"),
+                                        fieldWithPath("content").type(JsonFieldType.STRING).description("내용"),
+                                        fieldWithPath("author").type(JsonFieldType.STRING).description("작성자"),
+                                        fieldWithPath("createdAt").type(JsonFieldType.STRING)
+                                                .attributes(DocumentFormatGenerator.getDateFormat())
+                                                .description("생성시간"),
+                                        fieldWithPath("modifiedAt").type(JsonFieldType.STRING)
+                                                .attributes(DocumentFormatGenerator.getDateFormat())
+                                                .description("수정시간")
+                                )
+                ));
 
-        verify(articleService, times(1))
-                .update(any(Account.class), anyLong(), any(ArticleDto.Update.class));
+        verify(commentService, times(1))
+                .update(eq(authenticatedAccount), eq(ARTICLE_ID), eq(1L), any(CommentDto.Update.class));
     }
 
     @Test
-    void When_Request_Delete_Article_With_Delete_Method_Expect_HttpStatus_Is_OK() throws Exception {
+    void When_Request_Delete_Comment_With_Delete_Method_Expect_HttpStatus_Is_OK() throws Exception {
 
         // given
         doNothing()
-                .when(articleService)
-                .delete(authenticatedAccount, 1L);
+                .when(commentService)
+                .delete(authenticatedAccount, ARTICLE_ID, 1L);
 
         // when
-        ResultActions result = mockMvc.perform(delete("/api/articles/{id}", 1L)
+        ResultActions result = mockMvc.perform(delete("/api/articles/{articleId}/comments/{commentId}",
+                ARTICLE_ID, 1L)
                 .header(AUTHORIZATION, VALID_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .characterEncoding(StandardCharsets.UTF_8));
@@ -344,13 +341,16 @@ class ArticleControllerWebTest {
         // then
         result.andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value(ApiResponseCode.OK.getText()))
-                .andDo(document("delete-article",
+                .andDo(document("delete-comment",
                         ApiDocumentUtil.getDocumentRequest(),
                         ApiDocumentUtil.getDocumentResponse(),
                         requestHeaders(headerWithName(AUTHORIZATION).description("Basic auth credentials")),
-                        pathParameters(parameterWithName("id").description("게시글 id"))
+                        pathParameters(
+                                parameterWithName("articleId").description("게시글 id"),
+                                parameterWithName("commentId").description("댓글 id")
+                        )
                 ));
 
-        verify(articleService, times(1)).delete(any(Account.class), anyLong());
+        verify(commentService, times(1)).delete(any(Account.class), anyLong(), anyLong());
     }
 }
