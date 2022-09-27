@@ -7,13 +7,13 @@ import java.util.List;
 
 public interface ArticleService {
 
-    ArticleDto.ResponseDetail create(Account account, ArticleDto.Create create);
+    ArticleDto.ResponseChange create(Account account, ArticleDto.Create create);
 
-    List<ArticleDto.Response> findAll();
+    List<ArticleDto.ResponseAll> findAll();
 
     ArticleDto.ResponseDetail findById(Long id);
 
-    ArticleDto.ResponseDetail update(Account account, Long id, ArticleDto.Update update);
+    ArticleDto.ResponseChange update(Account account, Long id, ArticleDto.Update update);
 
     void delete(Account account, Long id);
 }

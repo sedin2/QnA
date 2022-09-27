@@ -23,16 +23,16 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public ArticleDto.ResponseDetail create(Account account, ArticleDto.Create create) {
+    public ArticleDto.ResponseChange create(Account account, ArticleDto.Create create) {
         Article article = create.toEntity(account);
-        return ArticleDto.ResponseDetail.of(articleRepository.save(article));
+        return ArticleDto.ResponseChange.of(articleRepository.save(article));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<ArticleDto.Response> findAll() {
+    public List<ArticleDto.ResponseAll> findAll() {
         return articleRepository.findAll().stream()
-                .map(ArticleDto.Response::of)
+                .map(ArticleDto.ResponseAll::of)
                 .collect(Collectors.toList());
     }
 
@@ -43,11 +43,11 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public ArticleDto.ResponseDetail update(Account account, Long id, ArticleDto.Update update) {
+    public ArticleDto.ResponseChange update(Account account, Long id, ArticleDto.Update update) {
         Article article = findArticle(id);
         checkPermissionBetweenAccountAndAuthor(account, article.getAccount());
 
-        return ArticleDto.ResponseDetail.of(update.apply(article));
+        return ArticleDto.ResponseChange.of(update.apply(article));
     }
 
     @Override
