@@ -62,13 +62,14 @@ class ArticleServiceTest {
                 .id(1L)
                 .title(TITLE)
                 .content(CONTENT)
+                .author(NAME)
                 .account(authenticatedAccount)
                 .build();
 
         given(articleRepository.save(any())).willReturn(article);
 
         // when
-        ArticleDto.ResponseDetail response = articleService.create(authenticatedAccount, create);
+        ArticleDto.ResponseChange response = articleService.create(authenticatedAccount, create);
 
         // then
         assertThat(response.getId()).isEqualTo(1L);
@@ -100,7 +101,7 @@ class ArticleServiceTest {
         given(articleRepository.findAll()).willReturn(articles);
 
         // when
-        List<ArticleDto.Response> responseList = articleService.findAll();
+        List<ArticleDto.ResponseAll> responseList = articleService.findAll();
 
         // then
         assertThat(responseList).hasSize(2);
@@ -114,6 +115,7 @@ class ArticleServiceTest {
                 .id(1L)
                 .title(TITLE)
                 .content(CONTENT)
+                .author(NAME)
                 .account(authenticatedAccount)
                 .build();
 
@@ -158,7 +160,7 @@ class ArticleServiceTest {
         given(articleRepository.findById(1L)).willReturn(Optional.of(article));
 
         // when
-        ArticleDto.ResponseDetail response = articleService.update(authenticatedAccount, 1L, update);
+        ArticleDto.ResponseChange response = articleService.update(authenticatedAccount, 1L, update);
 
         // then
         assertThat(response.getTitle()).isEqualTo(PREFIX + TITLE);
