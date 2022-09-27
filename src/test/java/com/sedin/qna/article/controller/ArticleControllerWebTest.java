@@ -28,6 +28,7 @@ import org.springframework.web.context.WebApplicationContext;
 import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -110,11 +111,12 @@ class ArticleControllerWebTest {
     void When_Request_Create_Article_With_Post_Method_Expect_HttpStatus_Is_Created() throws Exception {
 
         // given
-        ArticleDto.ResponseDetail response = ArticleDto.ResponseDetail.builder()
+        ArticleDto.ResponseChange response = ArticleDto.ResponseChange.builder()
                 .id(1L)
                 .title(TITLE)
                 .content(CONTENT)
                 .author(AUTHOR)
+                .commentsCount(0L)
                 .createdAt(LocalDateTime.now())
                 .modifiedAt(LocalDateTime.now())
                 .build();
@@ -149,19 +151,20 @@ class ArticleControllerWebTest {
                                 fieldWithPath("title").type(JsonFieldType.STRING).description("제목"),
                                 fieldWithPath("content").type(JsonFieldType.STRING).description("내용")
                         ),
-                        responseFields(
-                                beneathPath("data").withSubsectionId("data"),
-                                fieldWithPath("article.id").type(JsonFieldType.NUMBER).description("아이디"),
-                                fieldWithPath("article.title").type(JsonFieldType.STRING).description("제목"),
-                                fieldWithPath("article.content").type(JsonFieldType.STRING).description("내용"),
-                                fieldWithPath("article.author").type(JsonFieldType.STRING).description("작성자"),
-                                fieldWithPath("article.createdAt").type(JsonFieldType.STRING)
-                                        .attributes(DocumentFormatGenerator.getDateFormat())
-                                        .description("생성시간"),
-                                fieldWithPath("article.modifiedAt").type(JsonFieldType.STRING)
-                                        .attributes(DocumentFormatGenerator.getDateFormat())
-                                        .description("수정시간")
-                        )));
+                        responseFields(beneathPath("data").withSubsectionId("data"))
+                                .andWithPrefix("article.",
+                                        fieldWithPath("id").type(JsonFieldType.NUMBER).description("아이디"),
+                                        fieldWithPath("title").type(JsonFieldType.STRING).description("제목"),
+                                        fieldWithPath("content").type(JsonFieldType.STRING).description("내용"),
+                                        fieldWithPath("commentsCount").type(JsonFieldType.NUMBER).description("댓글 수"),
+                                        fieldWithPath("author").type(JsonFieldType.STRING).description("작성자"),
+                                        fieldWithPath("createdAt").type(JsonFieldType.STRING)
+                                                .attributes(DocumentFormatGenerator.getDateFormat())
+                                                .description("생성시간"),
+                                        fieldWithPath("modifiedAt").type(JsonFieldType.STRING)
+                                                .attributes(DocumentFormatGenerator.getDateFormat())
+                                                .description("수정시간")
+                                )));
 
         verify(articleService, times(1)).create(any(), any());
     }
@@ -170,18 +173,20 @@ class ArticleControllerWebTest {
     void When_Request_All_Articles_With_Get_Method_Expect_HttpStatus_Is_OK() throws Exception {
 
         // given
-        List<ArticleDto.Response> list = Arrays.asList(
-                ArticleDto.Response.builder()
+        List<ArticleDto.ResponseAll> list = Arrays.asList(
+                ArticleDto.ResponseAll.builder()
                         .id(1L)
                         .title(TITLE)
                         .author(AUTHOR)
+                        .commentsCount(0L)
                         .createdAt(LocalDateTime.now())
                         .modifiedAt(LocalDateTime.now())
                         .build(),
-                ArticleDto.Response.builder()
+                ArticleDto.ResponseAll.builder()
                         .id(2L)
                         .title(TITLE)
                         .author(AUTHOR)
+                        .commentsCount(0L)
                         .createdAt(LocalDateTime.now())
                         .modifiedAt(LocalDateTime.now())
                         .build()
@@ -204,18 +209,19 @@ class ArticleControllerWebTest {
                 .andDo(document("read-all-articles",
                         ApiDocumentUtil.getDocumentRequest(),
                         ApiDocumentUtil.getDocumentResponse(),
-                        responseFields(
-                                beneathPath("data").withSubsectionId("data"),
-                                fieldWithPath("articles[].id").type(JsonFieldType.NUMBER).description("아이디"),
-                                fieldWithPath("articles[].title").type(JsonFieldType.STRING).description("제목"),
-                                fieldWithPath("articles[].author").type(JsonFieldType.STRING).description("작성자"),
-                                fieldWithPath("articles[].createdAt").type(JsonFieldType.STRING)
-                                        .attributes(DocumentFormatGenerator.getDateFormat())
-                                        .description("생성시간"),
-                                fieldWithPath("articles[].modifiedAt").type(JsonFieldType.STRING)
-                                        .attributes(DocumentFormatGenerator.getDateFormat())
-                                        .description("수정시간")
-                        )));
+                        responseFields(beneathPath("data").withSubsectionId("data"))
+                                .andWithPrefix("articles.[].",
+                                        fieldWithPath("id").type(JsonFieldType.NUMBER).description("아이디"),
+                                        fieldWithPath("title").type(JsonFieldType.STRING).description("제목"),
+                                        fieldWithPath("author").type(JsonFieldType.STRING).description("작성자"),
+                                        fieldWithPath("commentsCount").type(JsonFieldType.NUMBER).description("댓글 수"),
+                                        fieldWithPath("createdAt").type(JsonFieldType.STRING)
+                                                .attributes(DocumentFormatGenerator.getDateFormat())
+                                                .description("생성시간"),
+                                        fieldWithPath("modifiedAt").type(JsonFieldType.STRING)
+                                                .attributes(DocumentFormatGenerator.getDateFormat())
+                                                .description("수정시간")
+                                )));
 
         verify(articleService, times(1)).findAll();
     }
@@ -229,6 +235,8 @@ class ArticleControllerWebTest {
                 .title(TITLE)
                 .content(CONTENT)
                 .author(AUTHOR)
+                .commentsCount(0L)
+                .comments(new ArrayList<>())
                 .createdAt(LocalDateTime.now())
                 .modifiedAt(LocalDateTime.now())
                 .build();
@@ -249,19 +257,21 @@ class ArticleControllerWebTest {
                         ApiDocumentUtil.getDocumentRequest(),
                         ApiDocumentUtil.getDocumentResponse(),
                         pathParameters(parameterWithName("id").description("게시글 id")),
-                        responseFields(
-                                beneathPath("data").withSubsectionId("data"),
-                                fieldWithPath("article.id").type(JsonFieldType.NUMBER).description("아이디"),
-                                fieldWithPath("article.title").type(JsonFieldType.STRING).description("제목"),
-                                fieldWithPath("article.content").type(JsonFieldType.STRING).description("내용"),
-                                fieldWithPath("article.author").type(JsonFieldType.STRING).description("작성자"),
-                                fieldWithPath("article.createdAt").type(JsonFieldType.STRING)
-                                        .attributes(DocumentFormatGenerator.getDateFormat())
-                                        .description("생성시간"),
-                                fieldWithPath("article.modifiedAt").type(JsonFieldType.STRING)
-                                        .attributes(DocumentFormatGenerator.getDateFormat())
-                                        .description("수정시간")
-                        )));
+                        responseFields(beneathPath("data").withSubsectionId("data"))
+                                .andWithPrefix("article.",
+                                        fieldWithPath("id").type(JsonFieldType.NUMBER).description("아이디"),
+                                        fieldWithPath("title").type(JsonFieldType.STRING).description("제목"),
+                                        fieldWithPath("content").type(JsonFieldType.STRING).description("내용"),
+                                        fieldWithPath("author").type(JsonFieldType.STRING).description("작성자"),
+                                        fieldWithPath("commentsCount").type(JsonFieldType.NUMBER).description("댓글 수"),
+                                        fieldWithPath("comments").type(JsonFieldType.ARRAY).description("댓글"),
+                                        fieldWithPath("createdAt").type(JsonFieldType.STRING)
+                                                .attributes(DocumentFormatGenerator.getDateFormat())
+                                                .description("생성시간"),
+                                        fieldWithPath("modifiedAt").type(JsonFieldType.STRING)
+                                                .attributes(DocumentFormatGenerator.getDateFormat())
+                                                .description("수정시간")
+                                )));
 
         verify(articleService, times(1)).findById(anyLong());
     }
@@ -270,11 +280,12 @@ class ArticleControllerWebTest {
     void When_Request_Update_Article_With_Patch_Method_Expect_HttpStatus_Is_OK() throws Exception {
 
         // given
-        ArticleDto.ResponseDetail detail = ArticleDto.ResponseDetail.builder()
+        ArticleDto.ResponseChange response = ArticleDto.ResponseChange.builder()
                 .id(1L)
                 .title(PREFIX + TITLE)
                 .content(PREFIX + CONTENT)
                 .author(AUTHOR)
+                .commentsCount(0L)
                 .createdAt(LocalDateTime.now())
                 .modifiedAt(LocalDateTime.now())
                 .build();
@@ -287,7 +298,7 @@ class ArticleControllerWebTest {
         String requestBody = objectMapper.writeValueAsString(update);
 
         given(articleService.update(eq(authenticatedAccount), eq(1L), any(ArticleDto.Update.class)))
-                .willReturn(detail);
+                .willReturn(response);
 
         // when
         ResultActions result = mockMvc.perform(patch("/api/articles/{id}", 1L)
@@ -310,18 +321,20 @@ class ArticleControllerWebTest {
                                 fieldWithPath("content").type(JsonFieldType.STRING).description("내용")
                         ),
                         responseFields(
-                                beneathPath("data").withSubsectionId("data"),
-                                fieldWithPath("article.id").type(JsonFieldType.NUMBER).description("아이디"),
-                                fieldWithPath("article.title").type(JsonFieldType.STRING).description("제목"),
-                                fieldWithPath("article.content").type(JsonFieldType.STRING).description("내용"),
-                                fieldWithPath("article.author").type(JsonFieldType.STRING).description("작성자"),
-                                fieldWithPath("article.createdAt").type(JsonFieldType.STRING)
-                                        .attributes(DocumentFormatGenerator.getDateFormat())
-                                        .description("생성시간"),
-                                fieldWithPath("article.modifiedAt").type(JsonFieldType.STRING)
-                                        .attributes(DocumentFormatGenerator.getDateFormat())
-                                        .description("수정시간")
-                        )));
+                                beneathPath("data").withSubsectionId("data"))
+                                .andWithPrefix("article.",
+                                        fieldWithPath("id").type(JsonFieldType.NUMBER).description("아이디"),
+                                        fieldWithPath("title").type(JsonFieldType.STRING).description("제목"),
+                                        fieldWithPath("content").type(JsonFieldType.STRING).description("내용"),
+                                        fieldWithPath("author").type(JsonFieldType.STRING).description("작성자"),
+                                        fieldWithPath("commentsCount").type(JsonFieldType.NUMBER).description("댓글 수"),
+                                        fieldWithPath("createdAt").type(JsonFieldType.STRING)
+                                                .attributes(DocumentFormatGenerator.getDateFormat())
+                                                .description("생성시간"),
+                                        fieldWithPath("modifiedAt").type(JsonFieldType.STRING)
+                                                .attributes(DocumentFormatGenerator.getDateFormat())
+                                                .description("수정시간")
+                                )));
 
         verify(articleService, times(1))
                 .update(any(Account.class), anyLong(), any(ArticleDto.Update.class));
