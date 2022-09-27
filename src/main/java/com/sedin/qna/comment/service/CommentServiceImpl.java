@@ -57,6 +57,7 @@ public class CommentServiceImpl implements CommentService {
     public void delete(Account account, Long articleId, Long commentId) {
         Comment comment = findComment(articleId, commentId);
         checkPermissionBetweenAccountAndAuthor(account, comment.getAccount());
+        comment.getArticle().minusCommentsCount();
         commentRepository.delete(comment);
     }
 

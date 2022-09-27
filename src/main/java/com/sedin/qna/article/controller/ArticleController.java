@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import static com.sedin.qna.article.model.ArticleDto.*;
+
 import javax.validation.Valid;
 
 @RestController
@@ -32,29 +34,30 @@ public class ArticleController {
     @PostMapping
     @LoginRequired
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponseDto<ArticleDto.ResponseOne> create(@RequestAttribute Account account,
-                                                         @RequestBody @Valid ArticleDto.Create create) {
-        return ApiResponseDto.OK(new ArticleDto.ResponseOne(articleService.create(account, create)));
+    public ApiResponseDto<ResponseOne<ArticleDto.ResponseChange>> create(@RequestAttribute Account account,
+                                                                         @RequestBody @Valid ArticleDto.Create create) {
+        return ApiResponseDto.OK(new ResponseOne<>(articleService.create(account, create)));
     }
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponseDto<ArticleDto.ResponseList> findAll() {
-        return ApiResponseDto.OK(new ArticleDto.ResponseList(articleService.findAll()));
+    public ApiResponseDto<ResponseList<ArticleDto.ResponseAll>> findAll() {
+        return ApiResponseDto.OK(new ResponseList<>(articleService.findAll()));
     }
 
     @GetMapping("{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponseDto<ArticleDto.ResponseOne> findById(@PathVariable Long id) {
-        return ApiResponseDto.OK(new ArticleDto.ResponseOne(articleService.findById(id)));
+    public ApiResponseDto<ResponseOne<ArticleDto.ResponseDetail>> findById(@PathVariable Long id) {
+        return ApiResponseDto.OK(new ResponseOne<>(articleService.findById(id)));
     }
 
     @PatchMapping("{id}")
     @LoginRequired
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponseDto<ArticleDto.ResponseOne> update(@RequestAttribute Account account, @PathVariable Long id,
-                                                         @RequestBody @Valid ArticleDto.Update update) {
-        return ApiResponseDto.OK(new ArticleDto.ResponseOne(articleService.update(account, id, update)));
+    public ApiResponseDto<ResponseOne<ArticleDto.ResponseChange>> update(@RequestAttribute Account account,
+                                                                         @PathVariable Long id,
+                                                                         @RequestBody @Valid ArticleDto.Update update) {
+        return ApiResponseDto.OK(new ArticleDto.ResponseOne<>(articleService.update(account, id, update)));
     }
 
     @DeleteMapping("{id}")
