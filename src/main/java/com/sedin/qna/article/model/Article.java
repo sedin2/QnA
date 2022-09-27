@@ -37,6 +37,12 @@ public class Article extends BaseTimeEntity {
     @Column(nullable = false, length = 1000)
     private String content;
 
+    @Column(nullable = false)
+    private String author;
+
+    @Column(nullable = false)
+    private Long commentsCount = 0L;
+
     @OneToMany(mappedBy = "article")
     private List<Comment> comments = new ArrayList<>();
 
@@ -45,17 +51,25 @@ public class Article extends BaseTimeEntity {
     private Account account;
 
     @Builder
-    private Article(Long id, String title, String content, Account account) {
+    private Article(Long id, String title, String content, String author, Account account) {
         this.id = id;
         this.title = title;
         this.content = content;
+        this.author = author;
         this.account = account;
     }
 
     public Article update(String title, String content) {
         this.title = title;
         this.content = content;
-
         return this;
+    }
+
+    public void plusCommentsCount() {
+        this.commentsCount++;
+    }
+
+    public void minusCommentsCount() {
+        this.commentsCount--;
     }
 }
