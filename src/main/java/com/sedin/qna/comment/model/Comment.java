@@ -32,6 +32,9 @@ public class Comment extends BaseTimeEntity {
     @Column(nullable = false, length = 1000)
     private String content;
 
+    @Column(nullable = false)
+    private String author;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "article_id")
     private Article article;
@@ -41,8 +44,9 @@ public class Comment extends BaseTimeEntity {
     private Account account;
 
     @Builder
-    private Comment(String content, Article article, Account account) {
+    private Comment(String content, String author, Article article, Account account) {
         this.content = content;
+        this.author = author;
         this.article = article;
         this.account = account;
     }
@@ -50,5 +54,15 @@ public class Comment extends BaseTimeEntity {
     public Comment update(String content) {
         this.content = content;
         return this;
+    }
+
+    public void attachArticle(Article article) {
+        if (this.article != null) {
+            this.article.getComments().remove(this);
+        }
+        
+        this.article = article;
+        article.getComments().add(this);
+        article.plusCommentsCount();
     }
 }
