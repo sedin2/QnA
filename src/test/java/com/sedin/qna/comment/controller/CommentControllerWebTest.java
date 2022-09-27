@@ -139,24 +139,26 @@ class CommentControllerWebTest {
                 .andExpect(jsonPath("$.data.comment.content").value(CONTENT))
                 .andExpect(jsonPath("$.data.comment.author").value(NAME))
                 .andDo(document("create-comment",
-                        ApiDocumentUtil.getDocumentRequest(),
-                        ApiDocumentUtil.getDocumentResponse(),
-                        requestHeaders(headerWithName(AUTHORIZATION).description("Basic auth credentials")),
-                        requestFields(
-                                fieldWithPath("content").type(JsonFieldType.STRING).description("내용")
-                        ),
-                        responseFields(
-                                beneathPath("data").withSubsectionId("data"),
-                                fieldWithPath("comment.id").type(JsonFieldType.NUMBER).description("아이디"),
-                                fieldWithPath("comment.content").type(JsonFieldType.STRING).description("내용"),
-                                fieldWithPath("comment.author").type(JsonFieldType.STRING).description("작성자"),
-                                fieldWithPath("comment.createdAt").type(JsonFieldType.STRING)
-                                        .attributes(DocumentFormatGenerator.getDateFormat())
-                                        .description("생성시간"),
-                                fieldWithPath("comment.modifiedAt").type(JsonFieldType.STRING)
-                                        .attributes(DocumentFormatGenerator.getDateFormat())
-                                        .description("수정시간")
-                        )));
+                                ApiDocumentUtil.getDocumentRequest(),
+                                ApiDocumentUtil.getDocumentResponse(),
+                                requestHeaders(headerWithName(AUTHORIZATION).description("Basic auth credentials")),
+                                requestFields(
+                                        fieldWithPath("content").type(JsonFieldType.STRING).description("내용")
+                                ),
+                                responseFields(beneathPath("data").withSubsectionId("data"))
+                                        .andWithPrefix("comment.",
+                                                fieldWithPath("id").type(JsonFieldType.NUMBER).description("아이디"),
+                                                fieldWithPath("content").type(JsonFieldType.STRING).description("내용"),
+                                                fieldWithPath("author").type(JsonFieldType.STRING).description("작성자"),
+                                                fieldWithPath("createdAt").type(JsonFieldType.STRING)
+                                                        .attributes(DocumentFormatGenerator.getDateFormat())
+                                                        .description("생성시간"),
+                                                fieldWithPath("modifiedAt").type(JsonFieldType.STRING)
+                                                        .attributes(DocumentFormatGenerator.getDateFormat())
+                                                        .description("수정시간")
+                                        )
+                        )
+                );
 
         verify(commentService, times(1))
                 .create(eq(authenticatedAccount), eq(ARTICLE_ID), any(CommentDto.Create.class));
@@ -195,21 +197,22 @@ class CommentControllerWebTest {
                 .andExpect(jsonPath("$.data.comments[0].content").value(CONTENT))
                 .andExpect(jsonPath("$.data.comments[0].author").value(NAME))
                 .andDo(document("read-all-comments",
-                        ApiDocumentUtil.getDocumentRequest(),
-                        ApiDocumentUtil.getDocumentResponse(),
-                        responseFields(beneathPath("data").withSubsectionId("data"))
-                                .andWithPrefix("comments.[].",
-                                        fieldWithPath("id").type(JsonFieldType.NUMBER).description("아이디"),
-                                        fieldWithPath("content").type(JsonFieldType.STRING).description("내용"),
-                                        fieldWithPath("author").type(JsonFieldType.STRING).description("작성자"),
-                                        fieldWithPath("createdAt").type(JsonFieldType.STRING)
-                                                .attributes(DocumentFormatGenerator.getDateFormat())
-                                                .description("생성시간"),
-                                        fieldWithPath("modifiedAt").type(JsonFieldType.STRING)
-                                                .attributes(DocumentFormatGenerator.getDateFormat())
-                                                .description("수정시간")
-                                )
-                ));
+                                ApiDocumentUtil.getDocumentRequest(),
+                                ApiDocumentUtil.getDocumentResponse(),
+                                responseFields(beneathPath("data").withSubsectionId("data"))
+                                        .andWithPrefix("comments.[].",
+                                                fieldWithPath("id").type(JsonFieldType.NUMBER).description("아이디"),
+                                                fieldWithPath("content").type(JsonFieldType.STRING).description("내용"),
+                                                fieldWithPath("author").type(JsonFieldType.STRING).description("작성자"),
+                                                fieldWithPath("createdAt").type(JsonFieldType.STRING)
+                                                        .attributes(DocumentFormatGenerator.getDateFormat())
+                                                        .description("생성시간"),
+                                                fieldWithPath("modifiedAt").type(JsonFieldType.STRING)
+                                                        .attributes(DocumentFormatGenerator.getDateFormat())
+                                                        .description("수정시간")
+                                        )
+                        )
+                );
 
         verify(commentService, times(1)).findAll(ARTICLE_ID);
     }
@@ -241,21 +244,22 @@ class CommentControllerWebTest {
                 .andExpect(jsonPath("$.data.comment.content").value(CONTENT))
                 .andExpect(jsonPath("$.data.comment.author").value(NAME))
                 .andDo(document("read-detail-comment",
-                        ApiDocumentUtil.getDocumentRequest(),
-                        ApiDocumentUtil.getDocumentResponse(),
-                        responseFields(beneathPath("data").withSubsectionId("data"))
-                                .andWithPrefix("comment.",
-                                        fieldWithPath("id").type(JsonFieldType.NUMBER).description("아이디"),
-                                        fieldWithPath("content").type(JsonFieldType.STRING).description("내용"),
-                                        fieldWithPath("author").type(JsonFieldType.STRING).description("작성자"),
-                                        fieldWithPath("createdAt").type(JsonFieldType.STRING)
-                                                .attributes(DocumentFormatGenerator.getDateFormat())
-                                                .description("생성시간"),
-                                        fieldWithPath("modifiedAt").type(JsonFieldType.STRING)
-                                                .attributes(DocumentFormatGenerator.getDateFormat())
-                                                .description("수정시간")
-                                )
-                ));
+                                ApiDocumentUtil.getDocumentRequest(),
+                                ApiDocumentUtil.getDocumentResponse(),
+                                responseFields(beneathPath("data").withSubsectionId("data"))
+                                        .andWithPrefix("comment.",
+                                                fieldWithPath("id").type(JsonFieldType.NUMBER).description("아이디"),
+                                                fieldWithPath("content").type(JsonFieldType.STRING).description("내용"),
+                                                fieldWithPath("author").type(JsonFieldType.STRING).description("작성자"),
+                                                fieldWithPath("createdAt").type(JsonFieldType.STRING)
+                                                        .attributes(DocumentFormatGenerator.getDateFormat())
+                                                        .description("생성시간"),
+                                                fieldWithPath("modifiedAt").type(JsonFieldType.STRING)
+                                                        .attributes(DocumentFormatGenerator.getDateFormat())
+                                                        .description("수정시간")
+                                        )
+                        )
+                );
 
         verify(commentService, times(1)).findById(ARTICLE_ID, 1L);
     }
@@ -294,30 +298,30 @@ class CommentControllerWebTest {
                 .andExpect(jsonPath("$.data.comment.id").value(1L))
                 .andExpect(jsonPath("$.data.comment.content").value(PREFIX + CONTENT))
                 .andDo(document("update-comment",
-                        ApiDocumentUtil.getDocumentRequest(),
-                        ApiDocumentUtil.getDocumentResponse(),
-                        requestHeaders(headerWithName(AUTHORIZATION).description("Basic auth credentials")),
-                        pathParameters(
-                                parameterWithName("articleId").description("게시글 id"),
-                                parameterWithName("commentId").description("댓글 id")
-                        ),
-                        requestFields(
-                                fieldWithPath("content").type(JsonFieldType.STRING).description("내용")
-                        ),
-                        responseFields(
-                                beneathPath("data").withSubsectionId("data"))
-                                .andWithPrefix("comment.",
-                                        fieldWithPath("id").type(JsonFieldType.NUMBER).description("아이디"),
-                                        fieldWithPath("content").type(JsonFieldType.STRING).description("내용"),
-                                        fieldWithPath("author").type(JsonFieldType.STRING).description("작성자"),
-                                        fieldWithPath("createdAt").type(JsonFieldType.STRING)
-                                                .attributes(DocumentFormatGenerator.getDateFormat())
-                                                .description("생성시간"),
-                                        fieldWithPath("modifiedAt").type(JsonFieldType.STRING)
-                                                .attributes(DocumentFormatGenerator.getDateFormat())
-                                                .description("수정시간")
-                                )
-                ));
+                                ApiDocumentUtil.getDocumentRequest(),
+                                ApiDocumentUtil.getDocumentResponse(),
+                                requestHeaders(headerWithName(AUTHORIZATION).description("Basic auth credentials")),
+                                pathParameters(
+                                        parameterWithName("articleId").description("게시글 id"),
+                                        parameterWithName("commentId").description("댓글 id")
+                                ),
+                                requestFields(
+                                        fieldWithPath("content").type(JsonFieldType.STRING).description("내용")
+                                ),
+                                responseFields(beneathPath("data").withSubsectionId("data"))
+                                        .andWithPrefix("comment.",
+                                                fieldWithPath("id").type(JsonFieldType.NUMBER).description("아이디"),
+                                                fieldWithPath("content").type(JsonFieldType.STRING).description("내용"),
+                                                fieldWithPath("author").type(JsonFieldType.STRING).description("작성자"),
+                                                fieldWithPath("createdAt").type(JsonFieldType.STRING)
+                                                        .attributes(DocumentFormatGenerator.getDateFormat())
+                                                        .description("생성시간"),
+                                                fieldWithPath("modifiedAt").type(JsonFieldType.STRING)
+                                                        .attributes(DocumentFormatGenerator.getDateFormat())
+                                                        .description("수정시간")
+                                        )
+                        )
+                );
 
         verify(commentService, times(1))
                 .update(eq(authenticatedAccount), eq(ARTICLE_ID), eq(1L), any(CommentDto.Update.class));
