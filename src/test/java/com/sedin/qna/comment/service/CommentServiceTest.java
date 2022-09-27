@@ -75,6 +75,7 @@ class CommentServiceTest {
         Comment comment = Comment.builder()
                 .content(CONTENT)
                 .article(article)
+                .author(NAME)
                 .account(authenticatedAccount)
                 .build();
 
@@ -124,6 +125,7 @@ class CommentServiceTest {
         // given
         Comment comment = Comment.builder()
                 .content(CONTENT)
+                .author(NAME)
                 .article(article)
                 .account(authenticatedAccount)
                 .build();
