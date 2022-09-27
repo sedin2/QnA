@@ -31,11 +31,15 @@ public class CommentDto {
         }
 
         public Comment toEntity(Account account, Article article) {
-            return Comment.builder()
+            Comment comment = Comment.builder()
                     .content(content)
-                    .article(article)
+                    .author(account.getName())
                     .account(account)
                     .build();
+
+            comment.attachArticle(article);
+
+            return comment;
         }
     }
 
@@ -83,7 +87,7 @@ public class CommentDto {
             return Response.builder()
                     .id(comment.getId())
                     .content(comment.getContent())
-                    .author(comment.getAccount().getName())
+                    .author(comment.getAuthor())
                     .createdAt(comment.getCreatedAt())
                     .modifiedAt(comment.getModifiedAt())
                     .build();
