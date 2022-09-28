@@ -10,6 +10,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -85,23 +89,26 @@ class ArticleServiceTest {
         // given
         List<Article> articles = List.of(
                 Article.builder()
-                        .id(1L)
+                        .id(2L)
                         .title(TITLE)
                         .content(CONTENT)
                         .account(authenticatedAccount)
                         .build(),
                 Article.builder()
-                        .id(2L)
+                        .id(1L)
                         .title(TITLE)
                         .content(CONTENT)
                         .account(authenticatedAccount)
                         .build()
         );
 
-        given(articleRepository.findAll()).willReturn(articles);
+        Page<Article> pagedArticles = new PageImpl<>(articles);
+        Pageable pageable = PageRequest.of(0, 10);
+
+        given(articleRepository.findAll(pageable)).willReturn(pagedArticles);
 
         // when
-        List<ArticleDto.ResponseAll> responseList = articleService.findAll();
+        List<ArticleDto.ResponseAll> responseList = articleService.findAll(pageable);
 
         // then
         assertThat(responseList).hasSize(2);
