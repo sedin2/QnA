@@ -5,6 +5,9 @@ import com.sedin.qna.article.model.ArticleDto;
 import com.sedin.qna.article.service.ArticleService;
 import com.sedin.qna.common.LoginRequired;
 import com.sedin.qna.network.ApiResponseDto;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,9 +20,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.sedin.qna.article.model.ArticleDto.*;
-
 import javax.validation.Valid;
+
+import static com.sedin.qna.article.model.ArticleDto.ResponseList;
+import static com.sedin.qna.article.model.ArticleDto.ResponseOne;
 
 @RestController
 @RequestMapping("/api/articles")
@@ -41,8 +45,9 @@ public class ArticleController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponseDto<ResponseList<ArticleDto.ResponseAll>> findAll() {
-        return ApiResponseDto.OK(new ResponseList<>(articleService.findAll()));
+    public ApiResponseDto<ResponseList<ArticleDto.ResponseAll>> findAll(
+            @PageableDefault(sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ApiResponseDto.OK(new ResponseList<>(articleService.findAll(pageable)));
     }
 
     @GetMapping("{id}")

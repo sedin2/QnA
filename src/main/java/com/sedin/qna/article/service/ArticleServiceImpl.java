@@ -6,6 +6,7 @@ import com.sedin.qna.article.model.ArticleDto;
 import com.sedin.qna.article.repository.ArticleRepository;
 import com.sedin.qna.exception.NotFoundException;
 import com.sedin.qna.exception.PermissionToAccessException;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,8 +31,8 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ArticleDto.ResponseAll> findAll() {
-        return articleRepository.findAll().stream()
+    public List<ArticleDto.ResponseAll> findAll(Pageable pageable) {
+        return articleRepository.findAll(pageable).stream()
                 .map(ArticleDto.ResponseAll::of)
                 .collect(Collectors.toList());
     }
