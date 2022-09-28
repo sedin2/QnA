@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.RestDocumentationContextProvider;
@@ -22,6 +23,7 @@ import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -54,6 +56,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.requestF
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
+import static org.springframework.restdocs.request.RequestDocumentation.requestParameters;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -175,7 +178,7 @@ class ArticleControllerWebTest {
         // given
         List<ArticleDto.ResponseAll> list = Arrays.asList(
                 ArticleDto.ResponseAll.builder()
-                        .id(1L)
+                        .id(2L)
                         .title(TITLE)
                         .author(AUTHOR)
                         .commentsCount(0L)
@@ -183,7 +186,7 @@ class ArticleControllerWebTest {
                         .modifiedAt(LocalDateTime.now())
                         .build(),
                 ArticleDto.ResponseAll.builder()
-                        .id(2L)
+                        .id(1L)
                         .title(TITLE)
                         .author(AUTHOR)
                         .commentsCount(0L)
@@ -192,23 +195,28 @@ class ArticleControllerWebTest {
                         .build()
         );
 
-        given(articleService.findAll())
+        given(articleService.findAll(any(Pageable.class)))
                 .willReturn(list);
 
         // when
-        ResultActions result = mockMvc.perform(get("/api/articles")
+        ResultActions result = mockMvc.perform(get("/api/articles?page=0&size=10")
                 .contentType(MediaType.APPLICATION_JSON)
                 .characterEncoding(StandardCharsets.UTF_8)
                 .header(AUTHORIZATION, VALID_TOKEN));
 
         // then
         result.andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.articles[0].id").value(1L))
-                .andExpect(jsonPath("$.data.articles[1].id").value(2L))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(jsonPath("$.data.articles[0].id").value(2L))
+                .andExpect(jsonPath("$.data.articles[1].id").value(1L))
                 .andExpect(jsonPath("$.data.articles[0].content").doesNotHaveJsonPath())
                 .andDo(document("read-all-articles",
                         ApiDocumentUtil.getDocumentRequest(),
                         ApiDocumentUtil.getDocumentResponse(),
+                        requestParameters(
+                                parameterWithName("page").description("페이지 번호").optional(),
+                                parameterWithName("size").description("한 페이지 데이터 수").optional()
+                        ),
                         responseFields(beneathPath("data").withSubsectionId("data"))
                                 .andWithPrefix("articles.[].",
                                         fieldWithPath("id").type(JsonFieldType.NUMBER).description("아이디"),
@@ -223,7 +231,7 @@ class ArticleControllerWebTest {
                                                 .description("수정시간")
                                 )));
 
-        verify(articleService, times(1)).findAll();
+        verify(articleService, times(1)).findAll(any(Pageable.class));
     }
 
     @Test

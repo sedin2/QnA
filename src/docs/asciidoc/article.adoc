@@ -59,6 +59,10 @@ include::{snippets}/create-article/http-response.adoc[]
 
 ==== Request
 
+===== Request Parameters
+
+include::{snippets}/read-all-articles/request-parameters.adoc[]
+
 ===== Request HTTP Example
 
 include::{snippets}/read-all-articles/http-request.adoc[]
