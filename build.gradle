@@ -93,6 +93,10 @@ javadoc {
     options.encoding = 'UTF-8'
 }
 
+jar {
+    enabled = false
+}
+
 //bootJar {
 //    archiveFileName = 'app.jar'
 //    dependsOn asciidoctor
