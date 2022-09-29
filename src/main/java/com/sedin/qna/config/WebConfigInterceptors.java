@@ -16,7 +16,7 @@ public class WebConfigInterceptors implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(authenticationInterceptor)
-                .excludePathPatterns("/favicon.ico", "/api/docs/*", "/api/auth/*")
+                .excludePathPatterns("/favicon.ico", "/api/docs/**", "/api/auth/**")
                 .order(Ordered.LOWEST_PRECEDENCE);
     }
 }
