@@ -25,3 +25,6 @@
 
 - Password Encoding & Login
   - [패스워드 인코딩과 로그인 기능 구현](https://github.com/sedin2/QnA/wiki/Login)
+
+- 트러블 슈팅
+  - [Custom Interceptor에서 영속성 컨텍스트(Persistence Context) 동작](https://github.com/sedin2/QnA/issues/12)
