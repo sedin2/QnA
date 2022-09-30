@@ -97,10 +97,9 @@ jar {
     enabled = false
 }
 
-//bootJar {
-//    archiveFileName = 'app.jar'
-//    dependsOn asciidoctor
-//    from("${asciidoctor.outputDir}/*.html") {
-//        into "BOOT-INF/classes/static/docs"
-//    }
-//}
+bootJar {
+    dependsOn asciidoctor
+    from("${asciidoctor.outputDir}/*.html") {
+        into "BOOT-INF/classes/static/docs"
+    }
+}
