@@ -99,7 +99,7 @@ jar {
 
 bootJar {
     dependsOn asciidoctor
-    from("${asciidoctor.outputDir}/*.html") {
+    from layout.buildDirectory.dir("docs/asciidoc/*.html") {
         into "BOOT-INF/classes/static/docs"
     }
 }
