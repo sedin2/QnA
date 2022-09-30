@@ -3,6 +3,7 @@ package com.sedin.qna.interceptor;
 import com.sedin.qna.account.model.Account;
 import com.sedin.qna.athentication.service.AuthenticationService;
 import com.sedin.qna.common.LoginRequired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -11,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @Component
+@Slf4j
 public class AuthenticationInterceptor implements HandlerInterceptor {
 
     private final String ACCOUNT = "account";
@@ -26,6 +28,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
                              Object handler) throws Exception {
 
+        log.info(request.getRequestURI());
         if (handler instanceof HandlerMethod) {
             HandlerMethod handlerMethod = (HandlerMethod) handler;
             if (!handlerMethod.hasMethodAnnotation(LoginRequired.class)) {
