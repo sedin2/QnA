@@ -9,6 +9,6 @@ public class TestController {
 
     @GetMapping("/api/test")
     public ApiResponseDto<String> test() {
-        return ApiResponseDto.OK("배포 테스트");
+        return ApiResponseDto.OK("자동 배포 수정 테스트");
     }
 }
