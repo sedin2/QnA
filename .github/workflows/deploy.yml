@@ -32,34 +32,41 @@ jobs:
         distribution: 'zulu'
         java-version: '11'
 
-    # (3) Gradle build (Test 제외)
+    # (3) Gradle build
     - name: Run chmod to make gradlew executable
       run: chmod +x ./gradlew
     - name: Build with Gradle
       run: ./gradlew clean build
 
-    # (4) AWS 인증 (IAM 사용자 Access Key, Secret Key 활용)
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ env.AWS_REGION }}
-
-    # (5) 빌드 결과물을 S3 버킷에 업로드
-    - name: Upload to AWS S3
+    # (4) 웹 이미지 빌드 및 도커허브에 푸쉬
+    - name: Docker Image Build And Push At DockerHub
       run: |
-        aws deploy push \
-          --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
-          --ignore-hidden-files \
-          --s3-location s3://$S3_BUCKET_NAME/$GITHUB_SHA.zip \
-          --source .
+        docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+        docker build -t ${{ secrets.DOCKER_REPOSITORY }}/qna-restful-api:web .
+        docker push ${{ secrets.DOCKER_REPOSITORY }}/qna-restful-api:web
 
-    # (6) S3 버킷에 있는 파일을 대상으로 CodeDeploy 실행
-    - name: Deploy to AWS EC2 from S3
-      run: |
-        aws deploy create-deployment \
-          --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
-          --deployment-config-name CodeDeployDefault.AllAtOnce \
-          --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} \
-          --s3-location bucket=$S3_BUCKET_NAME,key=$GITHUB_SHA.zip,bundleType=zip
+#    # (5) AWS 인증 (IAM 사용자 Access Key, Secret Key 활용)
+#    - name: Configure AWS credentials
+#      uses: aws-actions/configure-aws-credentials@v1
+#      with:
+#        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#        aws-region: ${{ env.AWS_REGION }}
+#
+#    # (6) 빌드 결과물을 S3 버킷에 업로드
+#    - name: Upload to AWS S3
+#      run: |
+#        aws deploy push \
+#          --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
+#          --ignore-hidden-files \
+#          --s3-location s3://$S3_BUCKET_NAME/$GITHUB_SHA.zip \
+#          --source .
+#
+#    # (7) S3 버킷에 있는 파일을 대상으로 CodeDeploy 실행
+#    - name: Deploy to AWS EC2 from S3
+#      run: |
+#        aws deploy create-deployment \
+#          --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
+#          --deployment-config-name CodeDeployDefault.AllAtOnce \
+#          --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} \
+#          --s3-location bucket=$S3_BUCKET_NAME,key=$GITHUB_SHA.zip,bundleType=zip
