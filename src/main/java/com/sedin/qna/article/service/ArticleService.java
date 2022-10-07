@@ -17,4 +17,6 @@ public interface ArticleService {
     ArticleDto.ResponseChange update(Account account, Long id, ArticleDto.Update update);
 
     void delete(Account account, Long id);
+
+    List<ArticleDto.ResponseDetail> findAllWithComments(Pageable pageable);
 }

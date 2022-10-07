@@ -72,4 +72,11 @@ public class ArticleController {
         articleService.delete(account, id);
         return ApiResponseDto.DEFAULT_OK;
     }
+
+    @GetMapping("/with-comments")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponseDto<ResponseList<ArticleDto.ResponseDetail>> findAllWithComments(
+            @PageableDefault(sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ApiResponseDto.OK(new ResponseList<>(articleService.findAllWithComments(pageable)));
+    }
 }
