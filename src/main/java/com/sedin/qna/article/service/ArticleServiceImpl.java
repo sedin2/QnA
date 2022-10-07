@@ -59,6 +59,13 @@ public class ArticleServiceImpl implements ArticleService {
         articleRepository.delete(article);
     }
 
+    @Override
+    public List<ArticleDto.ResponseDetail> findAllWithComments(Pageable pageable) {
+        return articleRepository.findAll(pageable).stream()
+                .map(ArticleDto.ResponseDetail::of)
+                .collect(Collectors.toList());
+    }
+
     private Article findArticle(Long id) {
         return articleRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(id.toString()));
