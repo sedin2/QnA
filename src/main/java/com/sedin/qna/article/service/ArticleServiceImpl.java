@@ -61,7 +61,7 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     public List<ArticleDto.ResponseDetail> findAllWithComments(Pageable pageable) {
-        return articleRepository.findAllFetchJoin(pageable).stream()
+        return articleRepository.findAllEntityGraph(pageable).stream()
                 .map(ArticleDto.ResponseDetail::of)
                 .collect(Collectors.toList());
     }
