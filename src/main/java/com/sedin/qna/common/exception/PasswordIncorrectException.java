@@ -1,4 +1,4 @@
-package com.sedin.qna.exception;
+package com.sedin.qna.common.exception;
 
 /**
  * 패스워드가 틀린 경우에 던집니다.

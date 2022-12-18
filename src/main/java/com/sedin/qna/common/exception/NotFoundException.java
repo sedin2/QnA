@@ -1,4 +1,4 @@
-package com.sedin.qna.exception;
+package com.sedin.qna.common.exception;
 
 /**
  * 리소스를 찾을 수 없을 경우에 던집니다.

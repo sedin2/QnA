@@ -1,4 +1,4 @@
-package com.sedin.qna.exception;
+package com.sedin.qna.common.exception;
 
 /**
  * 리소스에 접근 권한이 없을 경우에 던집니다.

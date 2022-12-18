@@ -1,4 +1,4 @@
-package com.sedin.qna.network;
+package com.sedin.qna.common.response;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

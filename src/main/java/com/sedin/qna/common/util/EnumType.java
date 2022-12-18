@@ -1,4 +1,4 @@
-package com.sedin.qna.util;
+package com.sedin.qna.common.util;
 
 public interface EnumType {
 

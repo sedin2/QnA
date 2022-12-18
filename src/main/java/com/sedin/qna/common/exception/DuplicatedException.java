@@ -1,4 +1,4 @@
-package com.sedin.qna.exception;
+package com.sedin.qna.common.exception;
 
 /**
  * 리소스가 중복일 경우에 던집니다.

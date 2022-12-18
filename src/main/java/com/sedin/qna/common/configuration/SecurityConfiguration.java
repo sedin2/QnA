@@ -1,8 +1,8 @@
-package com.sedin.qna.config;
+package com.sedin.qna.common.configuration;
 
 import com.sedin.qna.authentication.filter.JwtAuthenticationFilter;
-import com.sedin.qna.config.model.CustomAccessDeniedHandler;
-import com.sedin.qna.config.model.CustomAuthenticationEntryPoint;
+import com.sedin.qna.authentication.filter.CustomAccessDeniedHandler;
+import com.sedin.qna.authentication.filter.CustomAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -47,6 +47,7 @@ public class SecurityConfiguration {
                 .and()
                 .authorizeRequests()
                 .antMatchers(HttpMethod.POST, "/api/accounts", "/api/login").permitAll()
+                .antMatchers("/api/articles").hasAnyRole("USER", "ADMIN")
                 .antMatchers(HttpMethod.GET, "/api/docs/**").permitAll()
                 .antMatchers("/**").authenticated()
                 .anyRequest().permitAll()
