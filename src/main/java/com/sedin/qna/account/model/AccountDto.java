@@ -5,12 +5,9 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
 import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -19,33 +16,25 @@ public class AccountDto {
     @Getter
     public static class Create {
 
-        @NotBlank
-        private String loginId;
-        @NotBlank
-        private String password;
-        @NotBlank
-        private String name;
-        @DateTimeFormat(pattern = "yyyy-MM-dd")
-        private LocalDate bornDate;
-        @NotNull
-        private Gender gender;
         @Email
         @NotBlank
         private String email;
+
+        @NotBlank
+        private String password;
+
+        @NotBlank
+        private String name;
 
         private Create() {
 
         }
 
         @Builder
-        private Create(String loginId, String password, String name,
-                       LocalDate bornDate, Gender gender, String email) {
-            this.loginId = loginId;
+        private Create(String email, String password, String name) {
+            this.email = email;
             this.password = password;
             this.name = name;
-            this.bornDate = bornDate;
-            this.gender = gender;
-            this.email = email;
         }
 
         public void setEncodingPassword(String encodedPassword) {
@@ -54,12 +43,10 @@ public class AccountDto {
 
         public Account toEntity() {
             return Account.builder()
-                    .loginId(loginId)
+                    .email(email)
                     .password(password)
                     .name(name)
-                    .bornDate(bornDate)
-                    .gender(gender)
-                    .email(email)
+                    .role(Role.ROLE_USER)
                     .build();
         }
     }
@@ -69,8 +56,10 @@ public class AccountDto {
 
         @NotBlank
         private String originalPassword;
+
         @NotBlank
         private String newPassword;
+
         @Email
         @NotBlank
         private String email;
@@ -91,7 +80,8 @@ public class AccountDto {
     public static class Login {
 
         @NotBlank
-        private String loginId;
+        private String email;
+
         @NotBlank
         private String password;
 
@@ -100,8 +90,8 @@ public class AccountDto {
         }
 
         @Builder
-        private Login(String loginId, String password) {
-            this.loginId = loginId;
+        private Login(String email, String password) {
+            this.email = email;
             this.password = password;
         }
     }
@@ -109,37 +99,34 @@ public class AccountDto {
     @Getter
     public static class Response {
 
-        private Long id;
-        private String loginId;
+        private final Long id;
+
+        private final String email;
+
         @JsonIgnore
-        private String password;
-        private String name;
-        @DateTimeFormat(pattern = "yyyy-MM-dd")
-        private LocalDate bornDate;
-        private Gender gender;
-        private String email;
+        private final String password;
+
+        private final String name;
+
+        private final Role role;
 
         @Builder
-        private Response(Long id, String loginId, String password, String name,
-                         LocalDate bornDate, Gender gender, String email) {
+        private Response(Long id, String email, String password, String name,
+                         Role role) {
             this.id = id;
-            this.loginId = loginId;
+            this.email = email;
             this.password = password;
             this.name = name;
-            this.bornDate = bornDate;
-            this.gender = gender;
-            this.email = email;
+            this.role = role;
         }
 
         public static Response of(Account account) {
             return Response.builder()
                     .id(account.getId())
-                    .loginId(account.getLoginId())
+                    .email(account.getEmail())
                     .password(account.getPassword())
                     .name(account.getName())
-                    .bornDate(account.getBornDate())
-                    .gender(account.getGender())
-                    .email(account.getEmail())
+                    .role(account.getRole())
                     .build();
         }
     }
@@ -147,7 +134,7 @@ public class AccountDto {
     @Getter
     public static class ResponseOne {
 
-        private Response account;
+        private final Response account;
 
         public ResponseOne(Response account) {
             this.account = account;
@@ -157,7 +144,7 @@ public class AccountDto {
     @Getter
     public static class ResponseList {
 
-        private List<Response> accounts;
+        private final List<Response> accounts;
 
         public ResponseList(List<Response> accounts) {
             this.accounts = accounts;
