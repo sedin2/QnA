@@ -3,8 +3,8 @@ package com.sedin.qna.account.service;
 import com.sedin.qna.account.model.Account;
 import com.sedin.qna.account.model.AccountDto;
 import com.sedin.qna.account.repository.AccountRepository;
-import com.sedin.qna.exception.DuplicatedException;
-import com.sedin.qna.exception.PermissionToAccessException;
+import com.sedin.qna.common.exception.DuplicatedException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,10 +23,6 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public AccountDto.Response signUp(AccountDto.Create create) {
-        if (accountRepository.existsByLoginId(create.getLoginId())) {
-            throw new DuplicatedException(create.getLoginId());
-        }
-
         if (accountRepository.existsByEmail(create.getEmail())) {
             throw new DuplicatedException(create.getEmail());
         }
@@ -39,22 +35,22 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public AccountDto.Response update(Account account, Long id, AccountDto.Update update) {
-        checkPermissionToAccess(account.getId(), id);
+    public AccountDto.Response update(String email, AccountDto.Update update) {
+        Account account = findAccount(email);
         String encodedPassword = passwordEncoder.encode(update.getNewPassword());
         account.updatePasswordAndEmail(encodedPassword, update.getEmail());
         return AccountDto.Response.of(account);
     }
 
     @Override
-    public void delete(Account account, Long id) {
-        checkPermissionToAccess(account.getId(), id);
+    public void delete(String email) {
+        Account account = findAccount(email);
         accountRepository.delete(account);
     }
 
-    private static void checkPermissionToAccess(Long accountId, Long id) {
-        if (!accountId.equals(id)) {
-            throw new PermissionToAccessException();
-        }
+    private Account findAccount(String email) {
+        return accountRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException(email));
     }
+
 }
