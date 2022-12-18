@@ -1,4 +1,4 @@
-package com.sedin.qna.comment.model;
+package com.sedin.qna.article.comment.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.sedin.qna.account.model.Account;
@@ -66,13 +66,17 @@ public class CommentDto {
     @Getter
     public static class Response {
 
-        private Long id;
-        private String content;
-        private String author;
+        private final Long id;
+
+        private final String content;
+
+        private final String author;
+
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
-        private LocalDateTime createdAt;
+        private final LocalDateTime createdAt;
+
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
-        private LocalDateTime modifiedAt;
+        private final LocalDateTime modifiedAt;
 
         @Builder
         private Response(Long id, String content, String author, LocalDateTime createdAt, LocalDateTime modifiedAt) {
@@ -97,7 +101,7 @@ public class CommentDto {
     @Getter
     public static class ResponseOne {
 
-        private Response comment;
+        private final Response comment;
 
         public ResponseOne(Response comment) {
             this.comment = comment;
@@ -107,7 +111,7 @@ public class CommentDto {
     @Getter
     public static class ResponseList {
 
-        private List<Response> comments;
+        private final List<Response> comments;
 
         public ResponseList(List<Response> comments) {
             this.comments = comments;

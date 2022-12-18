@@ -1,13 +1,13 @@
-package com.sedin.qna.comment.service;
+package com.sedin.qna.article.comment.service;
 
 import com.sedin.qna.account.model.Account;
 import com.sedin.qna.article.model.Article;
 import com.sedin.qna.article.repository.ArticleRepository;
-import com.sedin.qna.comment.model.Comment;
-import com.sedin.qna.comment.model.CommentDto;
-import com.sedin.qna.comment.repository.CommentRepository;
-import com.sedin.qna.exception.NotFoundException;
-import com.sedin.qna.exception.PermissionToAccessException;
+import com.sedin.qna.article.comment.model.Comment;
+import com.sedin.qna.article.comment.model.CommentDto;
+import com.sedin.qna.article.comment.repository.CommentRepository;
+import com.sedin.qna.common.exception.NotFoundException;
+import com.sedin.qna.common.exception.PermissionToAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

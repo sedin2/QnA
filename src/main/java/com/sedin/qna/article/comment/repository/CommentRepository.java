@@ -1,6 +1,6 @@
-package com.sedin.qna.comment.repository;
+package com.sedin.qna.article.comment.repository;
 
-import com.sedin.qna.comment.model.Comment;
+import com.sedin.qna.article.comment.model.Comment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

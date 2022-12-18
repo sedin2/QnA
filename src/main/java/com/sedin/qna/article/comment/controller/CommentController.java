@@ -1,10 +1,9 @@
-package com.sedin.qna.comment.controller;
+package com.sedin.qna.article.comment.controller;
 
 import com.sedin.qna.account.model.Account;
-import com.sedin.qna.comment.model.CommentDto;
-import com.sedin.qna.comment.service.CommentService;
-import com.sedin.qna.common.LoginRequired;
-import com.sedin.qna.network.ApiResponseDto;
+import com.sedin.qna.article.comment.model.CommentDto;
+import com.sedin.qna.article.comment.service.CommentService;
+import com.sedin.qna.common.response.ApiResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,7 +29,6 @@ public class CommentController {
     }
 
     @PostMapping
-    @LoginRequired
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponseDto<CommentDto.ResponseOne> create(@RequestAttribute Account account,
                                                          @PathVariable Long articleId,
@@ -52,7 +50,6 @@ public class CommentController {
     }
 
     @PatchMapping("{commentId}")
-    @LoginRequired
     @ResponseStatus(HttpStatus.OK)
     public ApiResponseDto<CommentDto.ResponseOne> update(@RequestAttribute Account account,
                                                          @PathVariable Long articleId,
@@ -62,7 +59,6 @@ public class CommentController {
     }
 
     @DeleteMapping("{commentId}")
-    @LoginRequired
     @ResponseStatus(HttpStatus.OK)
     public ApiResponseDto<String> delete(@RequestAttribute Account account,
                                          @PathVariable Long articleId,

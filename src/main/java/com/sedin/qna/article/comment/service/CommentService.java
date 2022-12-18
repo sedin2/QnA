@@ -1,7 +1,7 @@
-package com.sedin.qna.comment.service;
+package com.sedin.qna.article.comment.service;
 
 import com.sedin.qna.account.model.Account;
-import com.sedin.qna.comment.model.CommentDto;
+import com.sedin.qna.article.comment.model.CommentDto;
 
 import java.util.List;
 
