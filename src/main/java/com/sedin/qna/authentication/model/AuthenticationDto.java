@@ -1,4 +1,4 @@
-package com.sedin.qna.athentication.model;
+package com.sedin.qna.authentication.model;
 
 import lombok.AccessLevel;
 import lombok.Builder;

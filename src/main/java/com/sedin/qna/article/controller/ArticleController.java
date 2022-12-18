@@ -3,8 +3,7 @@ package com.sedin.qna.article.controller;
 import com.sedin.qna.account.model.Account;
 import com.sedin.qna.article.model.ArticleDto;
 import com.sedin.qna.article.service.ArticleService;
-import com.sedin.qna.common.LoginRequired;
-import com.sedin.qna.network.ApiResponseDto;
+import com.sedin.qna.common.response.ApiResponseDto;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -36,7 +35,6 @@ public class ArticleController {
     }
 
     @PostMapping
-    @LoginRequired
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponseDto<ResponseOne<ArticleDto.ResponseChange>> create(@RequestAttribute Account account,
                                                                          @RequestBody @Valid ArticleDto.Create create) {
@@ -57,7 +55,6 @@ public class ArticleController {
     }
 
     @PatchMapping("{id}")
-    @LoginRequired
     @ResponseStatus(HttpStatus.OK)
     public ApiResponseDto<ResponseOne<ArticleDto.ResponseChange>> update(@RequestAttribute Account account,
                                                                          @PathVariable Long id,
@@ -66,7 +63,6 @@ public class ArticleController {
     }
 
     @DeleteMapping("{id}")
-    @LoginRequired
     @ResponseStatus(HttpStatus.OK)
     public ApiResponseDto<String> delete(@RequestAttribute Account account, @PathVariable Long id) {
         articleService.delete(account, id);

@@ -2,7 +2,7 @@ package com.sedin.qna.article.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.sedin.qna.account.model.Account;
-import com.sedin.qna.comment.model.CommentDto;
+import com.sedin.qna.article.comment.model.CommentDto;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
