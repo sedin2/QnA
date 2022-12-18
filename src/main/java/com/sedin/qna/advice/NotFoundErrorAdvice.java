@@ -1,8 +1,8 @@
 package com.sedin.qna.advice;
 
-import com.sedin.qna.exception.NotFoundException;
-import com.sedin.qna.network.ApiResponseCode;
-import com.sedin.qna.network.ApiResponseDto;
+import com.sedin.qna.common.exception.NotFoundException;
+import com.sedin.qna.common.response.ApiResponseCode;
+import com.sedin.qna.common.response.ApiResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
