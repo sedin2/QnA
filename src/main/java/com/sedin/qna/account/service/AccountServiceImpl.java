@@ -4,22 +4,19 @@ import com.sedin.qna.account.model.Account;
 import com.sedin.qna.account.model.AccountDto;
 import com.sedin.qna.account.repository.AccountRepository;
 import com.sedin.qna.common.exception.DuplicatedException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import com.sedin.qna.common.exception.NotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
 
     private final PasswordEncoder passwordEncoder;
     private final AccountRepository accountRepository;
-
-    public AccountServiceImpl(PasswordEncoder passwordEncoder, AccountRepository accountRepository) {
-        this.passwordEncoder = passwordEncoder;
-        this.accountRepository = accountRepository;
-    }
 
     @Override
     public AccountDto.Response signUp(AccountDto.Create create) {
@@ -50,7 +47,7 @@ public class AccountServiceImpl implements AccountService {
 
     private Account findAccount(String email) {
         return accountRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException(email));
+                .orElseThrow(() -> new NotFoundException(email));
     }
 
 }

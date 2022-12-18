@@ -1,7 +1,6 @@
 package com.sedin.qna.account.controller;
 
 import com.sedin.qna.account.model.AccountDto;
-import com.sedin.qna.account.model.CurrentAccount;
 import com.sedin.qna.account.service.AccountService;
 import com.sedin.qna.common.response.ApiResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +31,7 @@ public class AccountController {
 
     @PatchMapping
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponseDto<AccountDto.ResponseOne> update(@CurrentAccount String email,
+    public ApiResponseDto<AccountDto.ResponseOne> update(@AuthenticationPrincipal String email,
                                                          @RequestBody @Valid AccountDto.Update update) {
         return ApiResponseDto.OK(new AccountDto.ResponseOne(accountService.update(email, update)));
     }
