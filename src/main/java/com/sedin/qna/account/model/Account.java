@@ -46,10 +46,9 @@ public class Account {
         this.role = role;
     }
 
-    public Account updatePasswordAndEmail(String newPassword, String email) {
+    public Account updatePasswordAndName(String newPassword, String name) {
         this.password = newPassword;
-        this.email = email;
-
+        this.name = name;
         return this;
     }
 

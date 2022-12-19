@@ -24,8 +24,8 @@ public class AccountServiceImpl implements AccountService {
             throw new DuplicatedException(create.getEmail());
         }
 
-        create.setEncodingPassword(passwordEncoder.encode(create.getPassword()));
-        Account target = create.toEntity();
+        String encodingPassword = passwordEncoder.encode(create.getPassword());
+        Account target = create.toEntity(encodingPassword);
         Account newAccount = accountRepository.save(target);
 
         return AccountDto.Response.of(newAccount);
@@ -35,7 +35,7 @@ public class AccountServiceImpl implements AccountService {
     public AccountDto.Response update(String email, AccountDto.Update update) {
         Account account = findAccount(email);
         String encodedPassword = passwordEncoder.encode(update.getNewPassword());
-        account.updatePasswordAndEmail(encodedPassword, update.getEmail());
+        account.updatePasswordAndName(encodedPassword, update.getName());
         return AccountDto.Response.of(account);
     }
 

@@ -3,6 +3,7 @@ package com.sedin.qna.account.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -14,6 +15,7 @@ import java.util.List;
 public class AccountDto {
 
     @Getter
+    @EqualsAndHashCode
     public static class Create {
 
         @Email
@@ -26,6 +28,7 @@ public class AccountDto {
         @NotBlank
         private String name;
 
+
         private Create() {
 
         }
@@ -37,14 +40,10 @@ public class AccountDto {
             this.name = name;
         }
 
-        public void setEncodingPassword(String encodedPassword) {
-            this.password = encodedPassword;
-        }
-
-        public Account toEntity() {
+        public Account toEntity(String encodingPassword) {
             return Account.builder()
                     .email(email)
-                    .password(password)
+                    .password(encodingPassword)
                     .name(name)
                     .role(Role.ROLE_USER)
                     .build();
@@ -52,6 +51,7 @@ public class AccountDto {
     }
 
     @Getter
+    @EqualsAndHashCode
     public static class Update {
 
         @NotBlank
@@ -60,19 +60,18 @@ public class AccountDto {
         @NotBlank
         private String newPassword;
 
-        @Email
         @NotBlank
-        private String email;
+        private String name;
 
         private Update() {
 
         }
 
         @Builder
-        private Update(String originalPassword, String newPassword, String email) {
+        private Update(String originalPassword, String newPassword, String name) {
             this.originalPassword = originalPassword;
             this.newPassword = newPassword;
-            this.email = email;
+            this.name = name;
         }
     }
 
@@ -108,8 +107,6 @@ public class AccountDto {
 
         private final String name;
 
-        private final Role role;
-
         @Builder
         private Response(Long id, String email, String password, String name,
                          Role role) {
@@ -117,7 +114,6 @@ public class AccountDto {
             this.email = email;
             this.password = password;
             this.name = name;
-            this.role = role;
         }
 
         public static Response of(Account account) {
