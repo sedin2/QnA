@@ -1,46 +1,47 @@
-package com.sedin.qna.athentication.service;
+package com.sedin.qna.authentication.service;
 
 import com.sedin.qna.account.model.Account;
 import com.sedin.qna.account.model.AccountDto;
+import com.sedin.qna.account.model.Role;
 import com.sedin.qna.account.repository.AccountRepository;
-import com.sedin.qna.athentication.model.AuthenticationDto;
-import com.sedin.qna.exception.NotFoundException;
-import com.sedin.qna.exception.PasswordIncorrectException;
-import com.sedin.qna.util.JwtUtil;
+import com.sedin.qna.authentication.model.AuthenticationDto;
+import com.sedin.qna.common.exception.NotFoundException;
+import com.sedin.qna.common.exception.PasswordIncorrectException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("AuthenticationService Unit Test")
 class AuthenticationServiceTest {
 
-    private final String UNREGISTERED_LOGIN_ID = "not register login id";
-    private final String LOGIN_ID = "loginId";
+    private final String EMAIL = "cafe@mocha.com";
+    private final String UNREGISTERED_EMAIL = "noob@email.com";
     private final String PASSWORD = "password";
     private final String INCORRECT_PASSWORD = "incorrect";
-    private final String ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhY2NvdW50SWQiOjF9." +
-            "LwF0Ms-3xGGJX9JBIrc7bzGl1gYUAq3R3gesg35BA1w";
+    private final String ACCESS_TOKEN = "header.payload.verify-signature";
 
     @MockBean
-    private JwtUtil jwtUtil = mock(JwtUtil.class);
+    private JwtTokenProvider jwtTokenProvider = mock(JwtTokenProvider.class);
 
     @MockBean
     private PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
@@ -54,11 +55,12 @@ class AuthenticationServiceTest {
 
     @BeforeEach
     void prepare() {
-        authenticationService = new AuthenticationServiceImpl(jwtUtil, passwordEncoder, accountRepository);
+        authenticationService = new AuthenticationService(passwordEncoder, jwtTokenProvider, accountRepository);
 
         account = Account.builder()
-                .loginId(LOGIN_ID)
+                .email(EMAIL)
                 .password(PASSWORD)
+                .role(Role.ROLE_USER)
                 .build();
     }
 
@@ -67,45 +69,47 @@ class AuthenticationServiceTest {
     void When_Login_Expect_Returns_Response_With_AccessToken() {
         // given
         AccountDto.Login login = AccountDto.Login.builder()
-                .loginId(LOGIN_ID)
+                .email(EMAIL)
                 .password(PASSWORD)
                 .build();
 
-        given(accountRepository.findByLoginId(any(String.class))).willReturn(Optional.of(account));
+        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(account.getRole().name()));
+
+        given(accountRepository.findByEmail(EMAIL)).willReturn(Optional.of(account));
         given(passwordEncoder.matches(eq(PASSWORD), any(String.class))).willReturn(true);
-        given(jwtUtil.encode(account.getId())).willReturn(ACCESS_TOKEN);
+        given(jwtTokenProvider.encode(account.getEmail(), authorities)).willReturn(ACCESS_TOKEN);
 
         // when
-        AuthenticationDto.Response response = authenticationService.checkValidAuthentication(login);
+        AuthenticationDto.Response response = authenticationService.authenticate(login);
         String accessToken = response.getAccessToken();
 
         // then
         assertThat(response).isNotNull();
         assertThat(accessToken).isEqualTo(ACCESS_TOKEN);
 
-        verify(accountRepository, times(1)).findByLoginId(anyString());
-        verify(passwordEncoder, times(1)).matches(anyString(), anyString());
-        verify(jwtUtil, times(1)).encode(any());
+        verify(accountRepository).findByEmail(anyString());
+        verify(passwordEncoder).matches(eq(PASSWORD), anyString());
+        verify(jwtTokenProvider).encode(account.getEmail(), authorities);
     }
 
     @Test
-    @DisplayName("등록되지 않은 로그인 아이디가 주어지면 '리소스를 찾을 수 없음' 예외를 던진다")
-    void When_Login_With_Unregistered_LoginId_Expect_Throw_Not_Found_Exception() {
+    @DisplayName("등록되지 않은 이메일이 주어지면 '리소스를 찾을 수 없음' 예외를 던진다")
+    void When_Login_With_Unregistered_Email_Expect_Throw_Not_Found_Exception() {
         // given
-        AccountDto.Login loginWithUnregisteredLoginId = AccountDto.Login.builder()
-                .loginId(UNREGISTERED_LOGIN_ID)
+        AccountDto.Login loginWithUnregisteredEmail = AccountDto.Login.builder()
+                .email(UNREGISTERED_EMAIL)
                 .password(PASSWORD)
                 .build();
 
-        given(accountRepository.findByLoginId(anyString())).willThrow(new NotFoundException(UNREGISTERED_LOGIN_ID));
+        given(accountRepository.findByEmail(UNREGISTERED_EMAIL)).willThrow(new NotFoundException(UNREGISTERED_EMAIL));
 
         // when & then
-        assertThatThrownBy(() -> authenticationService.checkValidAuthentication(loginWithUnregisteredLoginId))
+        assertThatThrownBy(() -> authenticationService.authenticate(loginWithUnregisteredEmail))
                 .isExactlyInstanceOf(NotFoundException.class);
 
-        verify(accountRepository, times(1)).findByLoginId(anyString());
+        verify(accountRepository).findByEmail(UNREGISTERED_EMAIL);
         verify(passwordEncoder, never()).matches(anyString(), anyString());
-        verify(jwtUtil, never()).encode(anyLong());
+        verify(jwtTokenProvider, never()).encode(any(), any());
     }
 
     @Test
@@ -113,19 +117,18 @@ class AuthenticationServiceTest {
     void When_Login_With_Incorrect_Password_Expect_Throw_Password_Incorrect_Exception() {
         // given
         AccountDto.Login loginWithIncorrectPassword = AccountDto.Login.builder()
-                .loginId(LOGIN_ID)
+                .email(EMAIL)
                 .password(INCORRECT_PASSWORD)
                 .build();
 
-        given(accountRepository.findByLoginId(any(String.class))).willReturn(Optional.of(account));
-        given(passwordEncoder.matches(eq(INCORRECT_PASSWORD), any(String.class))).willReturn(false);
+        given(accountRepository.findByEmail(EMAIL)).willReturn(Optional.of(account));
 
         // when & then
-        assertThatThrownBy(() -> authenticationService.checkValidAuthentication(loginWithIncorrectPassword))
+        assertThatThrownBy(() -> authenticationService.authenticate(loginWithIncorrectPassword))
                 .isExactlyInstanceOf(PasswordIncorrectException.class);
 
-        verify(accountRepository, times(1)).findByLoginId(anyString());
-        verify(passwordEncoder, times(1)).matches(anyString(), anyString());
-        verify(jwtUtil, never()).encode(anyLong());
+        verify(accountRepository).findByEmail(EMAIL);
+        verify(passwordEncoder).matches(anyString(), anyString());
+        verify(jwtTokenProvider, never()).encode(anyString(), any());
     }
 }
