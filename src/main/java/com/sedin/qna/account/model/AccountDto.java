@@ -76,6 +76,7 @@ public class AccountDto {
     }
 
     @Getter
+    @EqualsAndHashCode
     public static class Login {
 
         @NotBlank

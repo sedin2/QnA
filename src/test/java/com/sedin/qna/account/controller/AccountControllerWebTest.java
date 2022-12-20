@@ -21,7 +21,6 @@ import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
@@ -42,8 +41,8 @@ import java.util.stream.Stream;
 import static com.sedin.qna.common.response.ApiResponseCode.BAD_PARAMETER;
 import static com.sedin.qna.common.response.ApiResponseCode.DUPLICATED_ERROR;
 import static com.sedin.qna.common.response.ApiResponseCode.NOT_FOUND;
+import static com.sedin.qna.common.response.ApiResponseCode.OK;
 import static com.sedin.qna.common.response.ApiResponseCode.UNAUTHORIZED;
-import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -63,18 +62,16 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AccountController.class)
 @MockBean(JpaMetamodelMappingContext.class)
-@ExtendWith({RestDocumentationExtension.class})
+@ExtendWith(RestDocumentationExtension.class)
 @Import({
         SecurityConfiguration.class,
         JwtTokenProvider.class
 })
-@AutoConfigureMockMvc
 @AutoConfigureRestDocs(uriScheme = "https", uriHost = "docs.api.com")
 class AccountControllerWebTest {
 
@@ -133,7 +130,6 @@ class AccountControllerWebTest {
                 .defaultResponseCharacterEncoding(StandardCharsets.UTF_8)
                 .apply(springSecurity())
                 .apply(documentationConfiguration(restDocumentation))
-                .alwaysDo(print())
                 .build();
     }
 
@@ -176,7 +172,8 @@ class AccountControllerWebTest {
 
                 // Post Account RestDocs
                 result.andExpect(status().isCreated())
-                        .andExpect(content().string(containsString(EMAIL)))
+                        .andExpect(jsonPath("$.code").value(OK.getId()))
+                        .andExpect(jsonPath("$.data.account.email").value(EMAIL))
                         .andDo(document("create-account",
                                 ApiDocumentUtil.getDocumentRequest(),
                                 ApiDocumentUtil.getDocumentResponse(),
@@ -219,7 +216,7 @@ class AccountControllerWebTest {
                                 .characterEncoding(StandardCharsets.UTF_8)
                                 .content(requestBody))
                         .andExpect(status().isBadRequest())
-                        .andExpect(content().string(containsString(BAD_PARAMETER.getId())));
+                        .andExpect(jsonPath("$.code").value(BAD_PARAMETER.getId()));
 
                 verify(accountService, never()).signUp(createDtoWithInvalidEmail);
             }
@@ -252,7 +249,7 @@ class AccountControllerWebTest {
                                 .characterEncoding(StandardCharsets.UTF_8)
                                 .content(requestBody))
                         .andExpect(status().isBadRequest())
-                        .andExpect(content().string(containsString(DUPLICATED_ERROR.getId())));
+                        .andExpect(jsonPath("$.code").value(DUPLICATED_ERROR.getId()));
 
                 verify(accountService).signUp(alreadyRegisteredEmail);
             }
@@ -278,7 +275,7 @@ class AccountControllerWebTest {
                                 .characterEncoding(StandardCharsets.UTF_8)
                                 .content(requestBody))
                         .andExpect(status().isBadRequest())
-                        .andExpect(content().string(containsString(BAD_PARAMETER.getId())));
+                        .andExpect(jsonPath("$.code").value(BAD_PARAMETER.getId()));
 
                 verify(accountService, never()).signUp(createDtoWithEmptyArgument);
             }
@@ -375,7 +372,7 @@ class AccountControllerWebTest {
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .characterEncoding(StandardCharsets.UTF_8))
                             .andExpect(status().isBadRequest())
-                            .andExpect(content().string(containsString(BAD_PARAMETER.getId())));
+                            .andExpect(jsonPath("$.code").value(BAD_PARAMETER.getId()));
 
                     verify(accountService, never())
                             .update(any(String.class), any(AccountDto.Update.class));
@@ -410,7 +407,7 @@ class AccountControllerWebTest {
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .characterEncoding(StandardCharsets.UTF_8))
                             .andExpect(status().isBadRequest())
-                            .andExpect(content().string(containsString(NOT_FOUND.getId())));
+                            .andExpect(jsonPath("$.code").value(NOT_FOUND.getId()));
 
                     verify(accountService).update(eq(NOT_EXISTED_EMAIL), any(AccountDto.Update.class));
                 }
@@ -468,7 +465,7 @@ class AccountControllerWebTest {
                     mockMvc.perform(delete("/api/accounts")
                                     .header(AUTHORIZATION, VALID_TOKEN))
                             .andExpect(status().isBadRequest())
-                            .andExpect(content().string(containsString(NOT_FOUND.getId())));
+                            .andExpect(jsonPath("$.code").value(NOT_FOUND.getId()));
 
                     verify(accountService).delete(NOT_EXISTED_EMAIL);
                 }
@@ -501,7 +498,7 @@ class AccountControllerWebTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .characterEncoding(StandardCharsets.UTF_8))
                         .andExpect(status().isUnauthorized())
-                        .andExpect(content().string(containsString(UNAUTHORIZED.getId())));
+                        .andExpect(jsonPath("$.code").value(UNAUTHORIZED.getId()));
 
                 verify(accountService, never()).update(any(String.class), any(AccountDto.Update.class));
             }
@@ -520,10 +517,11 @@ class AccountControllerWebTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .characterEncoding(StandardCharsets.UTF_8))
                         .andExpect(status().isUnauthorized())
-                        .andExpect(content().string(containsString(UNAUTHORIZED.getId())));
+                        .andExpect(jsonPath("$.code").value(UNAUTHORIZED.getId()));
 
                 verify(accountService, never()).delete(any(String.class));
             }
         }
     }
+
 }

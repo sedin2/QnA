@@ -1,14 +1,14 @@
-package com.sedin.qna.athentication.controller;
+package com.sedin.qna.authentication.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sedin.qna.account.model.AccountDto;
-import com.sedin.qna.athentication.model.AuthenticationDto;
-import com.sedin.qna.athentication.service.AuthenticationService;
-import com.sedin.qna.exception.NotFoundException;
-import com.sedin.qna.exception.PasswordIncorrectException;
-import com.sedin.qna.network.ApiResponseCode;
+import com.sedin.qna.authentication.model.AuthenticationDto;
+import com.sedin.qna.authentication.service.AuthenticationService;
+import com.sedin.qna.common.exception.NotFoundException;
+import com.sedin.qna.common.exception.PasswordIncorrectException;
 import com.sedin.qna.util.ApiDocumentUtil;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,15 +22,14 @@ import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.nio.charset.StandardCharsets;
 
-import static org.mockito.ArgumentMatchers.any;
+import static com.sedin.qna.common.response.ApiResponseCode.NOT_FOUND;
+import static com.sedin.qna.common.response.ApiResponseCode.UNAUTHORIZED;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
@@ -39,16 +38,17 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AuthenticationController.class)
 @MockBean(JpaMetamodelMappingContext.class)
-@ExtendWith({RestDocumentationExtension.class})
+@ExtendWith(RestDocumentationExtension.class)
 @AutoConfigureRestDocs(uriScheme = "https", uriHost = "docs.api.com")
+@DisplayName("AuthenticationController WebMVCTest")
 class AuthenticationControllerTest {
 
-    private final String UNREGISTERED_LOGIN_ID = "not register login id";
-    private final String LOGIN_ID = "loginId";
+    private final String EMAIL = "cafe@mocha.com";
     private final String PASSWORD = "password";
     private final String INCORRECT_PASSWORD = "incorrect";
     private final String ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhY2NvdW50SWQiOjF9." +
@@ -71,7 +71,9 @@ class AuthenticationControllerTest {
 
     @BeforeEach
     void setUp(RestDocumentationContextProvider restDocumentation) {
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(context)
+        this.mockMvc = MockMvcBuilders
+                .webAppContextSetup(context)
+                .defaultResponseCharacterEncoding(StandardCharsets.UTF_8)
                 .apply(documentationConfiguration(restDocumentation))
                 .build();
 
@@ -81,31 +83,32 @@ class AuthenticationControllerTest {
     }
 
     @Test
+    @DisplayName("로그인 요청 - Success")
     void When_Login_Account_Expect_OK() throws Exception {
         // given
         login = AccountDto.Login.builder()
-                .loginId(LOGIN_ID)
+                .email(EMAIL)
                 .password(PASSWORD)
                 .build();
 
-        given(authenticationService.checkValidAuthentication(any(AccountDto.Login.class))).willReturn(response);
+        given(authenticationService.authenticate(login)).willReturn(response);
 
         // when
         String requestBody = objectMapper.writeValueAsString(login);
 
-        ResultActions result = this.mockMvc.perform(post("/api/auth/login")
+        ResultActions result = this.mockMvc.perform(post("/api/login")
                 .content(requestBody)
                 .contentType(MediaType.APPLICATION_JSON)
                 .characterEncoding(StandardCharsets.UTF_8));
 
         // then
         result.andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.data.accessToken").value(ACCESS_TOKEN))
+                .andExpect(jsonPath("$.data.accessToken").value(ACCESS_TOKEN))
                 .andDo(document("login-account",
                         ApiDocumentUtil.getDocumentRequest(),
                         ApiDocumentUtil.getDocumentResponse(),
                         requestFields(
-                                fieldWithPath("loginId").type(JsonFieldType.STRING).description("아이디"),
+                                fieldWithPath("email").type(JsonFieldType.STRING).description("이메일"),
                                 fieldWithPath("password").type(JsonFieldType.STRING).description("비밀번호")
                         ),
                         responseFields(
@@ -114,58 +117,57 @@ class AuthenticationControllerTest {
                         )
                 ));
 
-        verify(authenticationService, times(1))
-                .checkValidAuthentication(any(AccountDto.Login.class));
+        verify(authenticationService).authenticate(login);
     }
 
     @Test
+    @DisplayName("로그인 요청 - Fail (패스워드 불일치)")
     void When_Login_Account_With_Incorrect_Password_Expect_Unauthorized() throws Exception {
         // given
         login = AccountDto.Login.builder()
-                .loginId(LOGIN_ID)
+                .email(EMAIL)
                 .password(INCORRECT_PASSWORD)
                 .build();
 
-        given(authenticationService.checkValidAuthentication(any(AccountDto.Login.class)))
+        given(authenticationService.authenticate(login))
                 .willThrow(new PasswordIncorrectException());
 
         // when
         String requestBody = objectMapper.writeValueAsString(login);
 
         ResultActions result = this.mockMvc.perform(
-                post("/api/auth/login")
+                post("/api/login")
                         .content(requestBody)
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8));
 
         // then
         result.andExpect(status().isUnauthorized())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.code")
-                        .value(ApiResponseCode.UNAUTHORIZED.toString()));
+                .andExpect(jsonPath("$.code").value(UNAUTHORIZED.getId()));
     }
 
     @Test
-    void When_Login_Account_With_Unregistered_LoginId_Expect_BadRequest() throws Exception {
+    @DisplayName("로그인 요청 - Fail (미등록 이메일)")
+    void When_Login_Account_With_Unregistered_Email_Expect_BadRequest() throws Exception {
         // given
         login = AccountDto.Login.builder()
-                .loginId(UNREGISTERED_LOGIN_ID)
+                .email(EMAIL)
                 .password(PASSWORD)
                 .build();
 
-        given(authenticationService.checkValidAuthentication(any(AccountDto.Login.class)))
-                .willThrow(new NotFoundException(UNREGISTERED_LOGIN_ID));
+        given(authenticationService.authenticate(login)).willThrow(new NotFoundException(EMAIL));
 
         // when
         String requestBody = objectMapper.writeValueAsString(login);
 
-        ResultActions result = this.mockMvc.perform(post("/api/auth/login")
+        ResultActions result = this.mockMvc.perform(post("/api/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .characterEncoding(StandardCharsets.UTF_8)
                 .content(requestBody));
 
         // then
         result.andExpect(status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.code")
-                        .value(ApiResponseCode.NOT_FOUND.toString()));
+                .andExpect(jsonPath("$.code").value(NOT_FOUND.getId()));
     }
+
 }
