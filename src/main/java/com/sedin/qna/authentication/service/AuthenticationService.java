@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -31,7 +32,8 @@ public class AuthenticationService {
             throw new PasswordIncorrectException();
         }
 
-        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(account.getRole().name()));
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("ROLES_" + account.getRole().name()));
         return AuthenticationDto.Response.of(jwtTokenProvider.encode(account.getEmail(), authorities));
     }
 

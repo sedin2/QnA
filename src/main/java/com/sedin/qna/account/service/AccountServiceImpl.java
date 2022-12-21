@@ -45,7 +45,8 @@ public class AccountServiceImpl implements AccountService {
         accountRepository.delete(account);
     }
 
-    private Account findAccount(String email) {
+    @Override
+    public Account findAccount(String email) {
         return accountRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException(email));
     }

@@ -45,7 +45,7 @@ public class AccountDto {
                     .email(email)
                     .password(encodingPassword)
                     .name(name)
-                    .role(Role.ROLE_USER)
+                    .role(Role.USER)
                     .build();
         }
     }
