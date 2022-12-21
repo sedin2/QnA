@@ -1,8 +1,7 @@
-package com.sedin.qna.comment.controller;
+package com.sedin.qna.article.comment.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sedin.qna.account.model.Account;
-import com.sedin.qna.article.comment.controller.CommentController;
 import com.sedin.qna.article.comment.model.CommentDto;
 import com.sedin.qna.article.comment.service.CommentService;
 import com.sedin.qna.authentication.service.JwtTokenProvider;
@@ -55,7 +54,6 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.response
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -96,9 +94,9 @@ class CommentControllerWebTest {
     void setUp(RestDocumentationContextProvider restDocumentation) {
         mockMvc = MockMvcBuilders
                 .webAppContextSetup(context)
+                .defaultResponseCharacterEncoding(StandardCharsets.UTF_8)
                 .apply(springSecurity())
                 .apply(documentationConfiguration(restDocumentation))
-                .alwaysDo(print())
                 .build();
 
         authenticatedAccount = Account.builder()

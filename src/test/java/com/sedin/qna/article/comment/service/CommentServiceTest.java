@@ -1,14 +1,12 @@
-package com.sedin.qna.comment.service;
+package com.sedin.qna.article.comment.service;
 
 import com.sedin.qna.account.model.Account;
 import com.sedin.qna.account.service.AccountService;
-import com.sedin.qna.article.comment.service.CommentService;
-import com.sedin.qna.article.comment.service.CommentServiceImpl;
-import com.sedin.qna.article.model.Article;
-import com.sedin.qna.article.repository.ArticleRepository;
 import com.sedin.qna.article.comment.model.Comment;
 import com.sedin.qna.article.comment.model.CommentDto;
 import com.sedin.qna.article.comment.repository.CommentRepository;
+import com.sedin.qna.article.model.Article;
+import com.sedin.qna.article.repository.ArticleRepository;
 import com.sedin.qna.common.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

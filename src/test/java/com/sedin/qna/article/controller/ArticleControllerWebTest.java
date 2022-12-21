@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sedin.qna.account.model.Account;
 import com.sedin.qna.article.model.ArticleDto;
 import com.sedin.qna.article.service.ArticleService;
-import com.sedin.qna.authentication.filter.JwtAuthenticationFilter;
 import com.sedin.qna.authentication.service.JwtTokenProvider;
 import com.sedin.qna.common.configuration.SecurityConfiguration;
 import com.sedin.qna.common.response.ApiResponseCode;
@@ -18,8 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
@@ -31,7 +28,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -63,7 +59,6 @@ import static org.springframework.restdocs.request.RequestDocumentation.paramete
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.restdocs.request.RequestDocumentation.requestParameters;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -105,9 +100,9 @@ class ArticleControllerWebTest {
     void setUp(RestDocumentationContextProvider restDocumentation) {
         mockMvc = MockMvcBuilders
                 .webAppContextSetup(context)
+                .defaultResponseCharacterEncoding(StandardCharsets.UTF_8)
                 .apply(springSecurity())
                 .apply(documentationConfiguration(restDocumentation))
-                .alwaysDo(print())
                 .build();
 
         authenticatedAccount = Account.builder()
@@ -214,7 +209,6 @@ class ArticleControllerWebTest {
 
         // then
         result.andExpect(status().isOk())
-                .andDo(print())
                 .andExpect(jsonPath("$.data.articles[0].id").value(2L))
                 .andExpect(jsonPath("$.data.articles[1].id").value(1L))
                 .andExpect(jsonPath("$.data.articles[0].content").doesNotHaveJsonPath())
