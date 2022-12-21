@@ -1,9 +1,9 @@
 package com.sedin.qna.api.document.controller;
 
-import com.sedin.qna.account.model.Gender;
+import com.sedin.qna.account.model.Role;
 import com.sedin.qna.api.document.Docs;
-import com.sedin.qna.network.ApiResponseCode;
-import com.sedin.qna.network.ApiResponseDto;
+import com.sedin.qna.common.response.ApiResponseCode;
+import com.sedin.qna.common.response.ApiResponseDto;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,13 +20,9 @@ public class RestDocsController {
         Map<String, String> apiResponseCodes = Arrays.stream(ApiResponseCode.values())
                 .collect(Collectors.toMap(ApiResponseCode::getId, ApiResponseCode::getText));
 
-        Map<String, String> gender = Arrays.stream(Gender.values())
-                .collect(Collectors.toMap(Gender::getId, Gender::getText));
-
         return ApiResponseDto.OK(
                 Docs.builder()
                         .apiResponseCodes(apiResponseCodes)
-                        .genders(gender)
                         .build()
         );
     }

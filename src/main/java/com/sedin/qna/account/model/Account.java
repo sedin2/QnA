@@ -12,7 +12,6 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.time.LocalDate;
 
 @Entity
 @Getter
@@ -25,8 +24,8 @@ public class Account {
     @Column(name = "account_id")
     private Long id;
 
-    @Column(name = "login_id", unique = true, nullable = false, length = 24)
-    private String loginId;
+    @Column(unique = true, nullable = false, length = 45)
+    private String email;
 
     @Column(nullable = false, length = 100)
     private String password;
@@ -34,32 +33,24 @@ public class Account {
     @Column(nullable = false, length = 8)
     private String name;
 
-    @Column(name = "born_date", nullable = false)
-    private LocalDate bornDate;
-
-    @Column(nullable = false)
+    @Column
     @Enumerated(value = EnumType.STRING)
-    private Gender gender;
-
-    @Column(unique = true, nullable = false, length = 45)
-    private String email;
+    private Role role;
 
     @Builder
-    private Account(Long id, String loginId, String password, String name, LocalDate bornDate, Gender gender, String email) {
+    private Account(Long id, String password, String name, String email, Role role) {
         this.id = id;
-        this.loginId = loginId;
         this.password = password;
         this.name = name;
-        this.bornDate = bornDate;
-        this.gender = gender;
         this.email = email;
+        this.role = role;
     }
 
-    public Account updatePasswordAndEmail(String newPassword, String email) {
+    public Account updatePasswordAndName(String newPassword, String name) {
         this.password = newPassword;
-        this.email = email;
-
+        this.name = name;
         return this;
     }
+
 }
 

@@ -1,10 +1,12 @@
 package com.sedin.qna.article.service;
 
 import com.sedin.qna.account.model.Account;
+import com.sedin.qna.account.service.AccountService;
+import com.sedin.qna.account.service.AccountServiceImpl;
 import com.sedin.qna.article.model.Article;
 import com.sedin.qna.article.model.ArticleDto;
 import com.sedin.qna.article.repository.ArticleRepository;
-import com.sedin.qna.exception.NotFoundException;
+import com.sedin.qna.common.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,12 +33,16 @@ import static org.mockito.Mockito.verify;
 @ExtendWith(MockitoExtension.class)
 class ArticleServiceTest {
 
+    private static final String PREFIX = "prefix";
+    private static final String EMAIL = "cafe@mocha.com";
     private static final String CONTENT = "content";
     private static final String NAME = "sejin";
-    private static final String PREFIX = "prefix";
     private static final String TITLE = "title";
 
     private ArticleService articleService;
+
+    @MockBean
+    private AccountService accountService = mock(AccountServiceImpl.class);
 
     @MockBean
     private ArticleRepository articleRepository = mock(ArticleRepository.class);
@@ -45,7 +51,7 @@ class ArticleServiceTest {
 
     @BeforeEach
     void prepare() {
-        articleService = new ArticleServiceImpl(articleRepository);
+        articleService = new ArticleServiceImpl(accountService, articleRepository);
 
         authenticatedAccount = Account.builder()
                 .id(1L)
@@ -55,7 +61,6 @@ class ArticleServiceTest {
 
     @Test
     void When_Create_Expect_New_Article() {
-
         // given
         ArticleDto.Create create = ArticleDto.Create.builder()
                 .title(TITLE)
@@ -70,10 +75,11 @@ class ArticleServiceTest {
                 .account(authenticatedAccount)
                 .build();
 
+        given(accountService.findAccount(EMAIL)).willReturn(authenticatedAccount);
         given(articleRepository.save(any())).willReturn(article);
 
         // when
-        ArticleDto.ResponseChange response = articleService.create(authenticatedAccount, create);
+        ArticleDto.ResponseChange response = articleService.create(EMAIL, create);
 
         // then
         assertThat(response.getId()).isEqualTo(1L);
@@ -85,7 +91,6 @@ class ArticleServiceTest {
 
     @Test
     void When_Find_All_Expect_Article_List() {
-
         // given
         List<Article> articles = List.of(
                 Article.builder()
@@ -116,7 +121,6 @@ class ArticleServiceTest {
 
     @Test
     void When_Find_By_Id_Expect_Article_Detail() {
-
         // given
         Article article = Article.builder()
                 .id(1L)
@@ -138,7 +142,6 @@ class ArticleServiceTest {
 
     @Test
     void When_Find_By_Not_Existed_Id_Expect_Not_Found_Exception() {
-
         // given
         given(articleRepository.findById(0L))
                 .willThrow(NotFoundException.class);
@@ -150,7 +153,6 @@ class ArticleServiceTest {
 
     @Test
     void When_Update_Expect_Updated_Article() {
-
         // given
         Article article = Article.builder()
                 .id(1L)
@@ -164,10 +166,11 @@ class ArticleServiceTest {
                 .content(PREFIX + CONTENT)
                 .build();
 
+        given(accountService.findAccount(EMAIL)).willReturn(authenticatedAccount);
         given(articleRepository.findById(1L)).willReturn(Optional.of(article));
 
         // when
-        ArticleDto.ResponseChange response = articleService.update(authenticatedAccount, 1L, update);
+        ArticleDto.ResponseChange response = articleService.update(EMAIL, 1L, update);
 
         // then
         assertThat(response.getTitle()).isEqualTo(PREFIX + TITLE);
@@ -178,7 +181,6 @@ class ArticleServiceTest {
 
     @Test
     void When_Delete_Expect_Deleted_Article() {
-
         // given
         Article article = Article.builder()
                 .id(1L)
@@ -187,11 +189,12 @@ class ArticleServiceTest {
                 .account(authenticatedAccount)
                 .build();
 
+        given(accountService.findAccount(EMAIL)).willReturn(authenticatedAccount);
         given(articleRepository.findById(1L)).willReturn(Optional.of(article));
         doNothing().when(articleRepository).delete(article);
 
         // when
-        articleService.delete(authenticatedAccount, 1L);
+        articleService.delete(EMAIL, 1L);
 
         // then
         given(articleRepository.findById(1L)).willThrow(NotFoundException.class);

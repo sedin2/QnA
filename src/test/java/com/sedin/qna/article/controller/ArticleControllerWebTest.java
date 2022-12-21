@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sedin.qna.account.model.Account;
 import com.sedin.qna.article.model.ArticleDto;
 import com.sedin.qna.article.service.ArticleService;
-import com.sedin.qna.interceptor.AuthenticationInterceptor;
-import com.sedin.qna.network.ApiResponseCode;
+import com.sedin.qna.authentication.service.JwtTokenProvider;
+import com.sedin.qna.common.configuration.SecurityConfiguration;
+import com.sedin.qna.common.response.ApiResponseCode;
+import com.sedin.qna.configuration.WithCustomMockUser;
 import com.sedin.qna.util.ApiDocumentUtil;
 import com.sedin.qna.util.DocumentFormatGenerator;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,19 +17,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -39,9 +42,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -57,17 +58,23 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.response
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.restdocs.request.RequestDocumentation.requestParameters;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ArticleController.class)
 @MockBean(JpaMetamodelMappingContext.class)
 @ExtendWith({RestDocumentationExtension.class})
+@Import({
+        SecurityConfiguration.class,
+        JwtTokenProvider.class
+})
 @AutoConfigureRestDocs(uriScheme = "https", uriHost = "docs.api.com")
 class ArticleControllerWebTest {
 
     private static final Long AUTHORIZED_ID = 1L;
     private static final String PREFIX = "prefix";
+    private static final String EMAIL = "cafe@mocha.com";
     private static final String TITLE = "title";
     private static final String CONTENT = "content";
     private static final String AUTHOR = "author";
@@ -78,13 +85,11 @@ class ArticleControllerWebTest {
     @Autowired
     private WebApplicationContext context;
 
+    @Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    @MockBean
-    private AuthenticationInterceptor authenticationInterceptor;
 
     @MockBean
     private ArticleService articleService;
@@ -92,27 +97,24 @@ class ArticleControllerWebTest {
     private Account authenticatedAccount;
 
     @BeforeEach
-    void setUp(RestDocumentationContextProvider restDocumentation) throws Exception {
+    void setUp(RestDocumentationContextProvider restDocumentation) {
         mockMvc = MockMvcBuilders
                 .webAppContextSetup(context)
+                .defaultResponseCharacterEncoding(StandardCharsets.UTF_8)
+                .apply(springSecurity())
                 .apply(documentationConfiguration(restDocumentation))
                 .build();
 
         authenticatedAccount = Account.builder()
                 .id(AUTHORIZED_ID)
                 .build();
-
-        when(authenticationInterceptor.preHandle(any(), any(), any()))
-                .then(invocation -> {
-                    HttpServletRequest request = invocation.getArgument(0);
-                    request.setAttribute("account", authenticatedAccount);
-                    return true;
-                });
     }
 
     @Test
+    @WithCustomMockUser
     void When_Request_Create_Article_With_Post_Method_Expect_HttpStatus_Is_Created() throws Exception {
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         // given
         ArticleDto.ResponseChange response = ArticleDto.ResponseChange.builder()
                 .id(1L)
@@ -131,13 +133,14 @@ class ArticleControllerWebTest {
 
         String requestBody = objectMapper.writeValueAsString(create);
 
-        given(articleService.create(eq(authenticatedAccount), any(ArticleDto.Create.class)))
+        given(articleService.create(eq(EMAIL), any(ArticleDto.Create.class)))
                 .willReturn(response);
 
         // when
         ResultActions result = mockMvc.perform(post("/api/articles")
-                .content(requestBody)
+                .accept(MediaType.APPLICATION_JSON)
                 .header(AUTHORIZATION, VALID_TOKEN)
+                .content(requestBody)
                 .contentType(MediaType.APPLICATION_JSON)
                 .characterEncoding(StandardCharsets.UTF_8));
 
@@ -169,7 +172,7 @@ class ArticleControllerWebTest {
                                                 .description("수정시간")
                                 )));
 
-        verify(articleService, times(1)).create(any(), any());
+        verify(articleService).create(any(), any());
     }
 
     @Test
@@ -206,7 +209,6 @@ class ArticleControllerWebTest {
 
         // then
         result.andExpect(status().isOk())
-                .andDo(MockMvcResultHandlers.print())
                 .andExpect(jsonPath("$.data.articles[0].id").value(2L))
                 .andExpect(jsonPath("$.data.articles[1].id").value(1L))
                 .andExpect(jsonPath("$.data.articles[0].content").doesNotHaveJsonPath())
@@ -231,7 +233,7 @@ class ArticleControllerWebTest {
                                                 .description("수정시간")
                                 )));
 
-        verify(articleService, times(1)).findAll(any(Pageable.class));
+        verify(articleService).findAll(any(Pageable.class));
     }
 
     @Test
@@ -281,10 +283,11 @@ class ArticleControllerWebTest {
                                                 .description("수정시간")
                                 )));
 
-        verify(articleService, times(1)).findById(anyLong());
+        verify(articleService).findById(anyLong());
     }
 
     @Test
+    @WithCustomMockUser
     void When_Request_Update_Article_With_Patch_Method_Expect_HttpStatus_Is_OK() throws Exception {
 
         // given
@@ -305,7 +308,7 @@ class ArticleControllerWebTest {
 
         String requestBody = objectMapper.writeValueAsString(update);
 
-        given(articleService.update(eq(authenticatedAccount), eq(1L), any(ArticleDto.Update.class)))
+        given(articleService.update(eq(EMAIL), eq(1L), any(ArticleDto.Update.class)))
                 .willReturn(response);
 
         // when
@@ -344,17 +347,17 @@ class ArticleControllerWebTest {
                                                 .description("수정시간")
                                 )));
 
-        verify(articleService, times(1))
-                .update(any(Account.class), anyLong(), any(ArticleDto.Update.class));
+        verify(articleService)
+                .update(any(String.class), anyLong(), any(ArticleDto.Update.class));
     }
 
     @Test
+    @WithCustomMockUser
     void When_Request_Delete_Article_With_Delete_Method_Expect_HttpStatus_Is_OK() throws Exception {
-
         // given
         doNothing()
                 .when(articleService)
-                .delete(authenticatedAccount, 1L);
+                .delete(EMAIL, 1L);
 
         // when
         ResultActions result = mockMvc.perform(delete("/api/articles/{id}", 1L)
@@ -372,6 +375,6 @@ class ArticleControllerWebTest {
                         pathParameters(parameterWithName("id").description("게시글 id"))
                 ));
 
-        verify(articleService, times(1)).delete(any(Account.class), anyLong());
+        verify(articleService).delete(any(String.class), anyLong());
     }
 }

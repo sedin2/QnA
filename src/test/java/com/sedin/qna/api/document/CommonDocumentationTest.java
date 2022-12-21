@@ -1,11 +1,10 @@
 package com.sedin.qna.api.document;
 
-import com.sedin.qna.account.model.Gender;
 import com.sedin.qna.api.document.controller.RestDocsController;
-import com.sedin.qna.athentication.service.AuthenticationService;
-import com.sedin.qna.network.ApiResponseCode;
+import com.sedin.qna.authentication.service.AuthenticationService;
+import com.sedin.qna.common.response.ApiResponseCode;
+import com.sedin.qna.common.util.EnumType;
 import com.sedin.qna.util.CustomResponseFieldsSnippet;
-import com.sedin.qna.util.EnumType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -60,7 +59,7 @@ public class CommonDocumentationTest {
 
     @Test
     void common() throws Exception {
-        ResultActions result = this.mockMvc.perform(get("/docs")
+        ResultActions result = mockMvc.perform(get("/docs")
                 .accept(MediaType.APPLICATION_JSON));
 
         result.andExpect(status().isOk())
@@ -75,10 +74,6 @@ public class CommonDocumentationTest {
                                 beneathPath("data.apiResponseCodes").withSubsectionId("apiResponseCodes"),
                                 attributes(key("title").value("응답 코드")),
                                 enumConvertFieldDescriptor(ApiResponseCode.values())
-                        ),
-                        customResponseFields("custom-response", beneathPath("data.genders").withSubsectionId("genders"),
-                                attributes(key("title").value("성별")),
-                                enumConvertFieldDescriptor(Gender.values())
                         )
                 ));
     }

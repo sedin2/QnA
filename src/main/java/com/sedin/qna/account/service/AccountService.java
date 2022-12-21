@@ -7,7 +7,10 @@ public interface AccountService {
 
     AccountDto.Response signUp(AccountDto.Create create);
 
-    AccountDto.Response update(Account account, Long id, AccountDto.Update update);
+    AccountDto.Response update(String email, AccountDto.Update update);
 
-    void delete(Account account, Long id);
+    void delete(String email);
+
+    Account findAccount(String email);
+
 }
