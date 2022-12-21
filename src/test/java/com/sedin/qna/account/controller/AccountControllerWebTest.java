@@ -87,7 +87,7 @@ class AccountControllerWebTest {
     private static final String NOT_EXISTED_EMAIL = "noob@mail.com";
     private static final String INVALID_EMAIL = "invalid";
     private static final String AUTHORIZATION = "Authorization";
-    private static final String BEARER_SCHEME = "Bearer";
+    private static final String BEARER_SCHEME = "Bearer ";
     private static final String VALID_TOKEN = "header.payload.verify-signature";
 
     @Autowired

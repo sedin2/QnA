@@ -101,6 +101,7 @@ jar {
 bootJar {
     dependsOn asciidoctor
     from("${asciidoctor.outputDir}") {
+        duplicatesStrategy = 'include'
         into "BOOT-INF/classes/static/docs"
     }
 }

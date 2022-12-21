@@ -20,13 +20,9 @@ public class RestDocsController {
         Map<String, String> apiResponseCodes = Arrays.stream(ApiResponseCode.values())
                 .collect(Collectors.toMap(ApiResponseCode::getId, ApiResponseCode::getText));
 
-        Map<String, String> gender = Arrays.stream(Role.values())
-                .collect(Collectors.toMap(Role::getId, Role::getText));
-
         return ApiResponseDto.OK(
                 Docs.builder()
                         .apiResponseCodes(apiResponseCodes)
-                        .genders(gender)
                         .build()
         );
     }

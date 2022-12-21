@@ -1,12 +1,15 @@
 package com.sedin.qna.comment.service;
 
 import com.sedin.qna.account.model.Account;
+import com.sedin.qna.account.service.AccountService;
+import com.sedin.qna.article.comment.service.CommentService;
+import com.sedin.qna.article.comment.service.CommentServiceImpl;
 import com.sedin.qna.article.model.Article;
 import com.sedin.qna.article.repository.ArticleRepository;
-import com.sedin.qna.comment.model.Comment;
-import com.sedin.qna.comment.model.CommentDto;
-import com.sedin.qna.comment.repository.CommentRepository;
-import com.sedin.qna.exception.NotFoundException;
+import com.sedin.qna.article.comment.model.Comment;
+import com.sedin.qna.article.comment.model.CommentDto;
+import com.sedin.qna.article.comment.repository.CommentRepository;
+import com.sedin.qna.common.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,9 +35,13 @@ class CommentServiceTest {
     private static final Long ARTICLE_ID = 1L;
     private static final Long COMMENT_ID = 1L;
     private static final String CONTENT = "content";
+    private static final String EMAIL = "cafe@mocha.com";
     private static final String NAME = "sejin";
     private static final String PREFIX = "prefix";
     private static final String TITLE = "title";
+
+    @MockBean
+    private AccountService accountService = mock(AccountService.class);
 
     @MockBean
     private ArticleRepository articleRepository = mock(ArticleRepository.class);
@@ -49,7 +56,7 @@ class CommentServiceTest {
 
     @BeforeEach
     void prepare() {
-        commentService = new CommentServiceImpl(articleRepository, commentRepository);
+        commentService = new CommentServiceImpl(accountService, articleRepository, commentRepository);
 
         authenticatedAccount = Account.builder()
                 .id(1L)
@@ -79,11 +86,12 @@ class CommentServiceTest {
                 .account(authenticatedAccount)
                 .build();
 
+        given(accountService.findAccount(EMAIL)).willReturn(authenticatedAccount);
         given(articleRepository.findById(anyLong())).willReturn(Optional.of(article));
         given(commentRepository.save(any())).willReturn(comment);
 
         // when
-        CommentDto.Response response = commentService.create(authenticatedAccount, ARTICLE_ID, create);
+        CommentDto.Response response = commentService.create(EMAIL, ARTICLE_ID, create);
 
         // then
         assertThat(response.getContent()).isEqualTo(CONTENT);
@@ -167,10 +175,11 @@ class CommentServiceTest {
                 .content(PREFIX + CONTENT)
                 .build();
 
+        given(accountService.findAccount(EMAIL)).willReturn(authenticatedAccount);
         given(commentRepository.findByArticleIdAndId(anyLong(), anyLong())).willReturn(Optional.of(comment));
 
         // when
-        CommentDto.Response response = commentService.update(authenticatedAccount, ARTICLE_ID, COMMENT_ID, update);
+        CommentDto.Response response = commentService.update(EMAIL, ARTICLE_ID, COMMENT_ID, update);
 
         // then
         assertThat(response.getContent()).isEqualTo(PREFIX + CONTENT);
@@ -187,11 +196,12 @@ class CommentServiceTest {
                 .account(authenticatedAccount)
                 .build();
 
+        given(accountService.findAccount(EMAIL)).willReturn(authenticatedAccount);
         given(commentRepository.findByArticleIdAndId(anyLong(), anyLong())).willReturn(Optional.of(comment));
         doNothing().when(commentRepository).delete(comment);
 
         // when
-        commentService.delete(authenticatedAccount, ARTICLE_ID, COMMENT_ID);
+        commentService.delete(EMAIL, ARTICLE_ID, COMMENT_ID);
 
         // then
         given(commentRepository.findByArticleIdAndId(ARTICLE_ID, COMMENT_ID)).willThrow(NotFoundException.class);

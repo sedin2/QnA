@@ -1,13 +1,13 @@
 ===== Response Fields
 |===
-|필드명|타입|양식|설명
+|필드명|타입|설명|양식
 
 {{#fields}}
 
 |{{#tableCellContent}}`+{{path}}+`{{/tableCellContent}}
 |{{#tableCellContent}}`+{{type}}+`{{/tableCellContent}}
-|{{#tableCellContent}}{{#format}}{{.}}{{/format}}{{/tableCellContent}}
 |{{#tableCellContent}}{{description}}{{/tableCellContent}}
+|{{#tableCellContent}}{{#format}}{{.}}{{/format}}{{/tableCellContent}}
 
 
 {{/fields}}

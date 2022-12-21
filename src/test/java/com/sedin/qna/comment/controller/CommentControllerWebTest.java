@@ -2,10 +2,13 @@ package com.sedin.qna.comment.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sedin.qna.account.model.Account;
-import com.sedin.qna.comment.model.CommentDto;
-import com.sedin.qna.comment.service.CommentService;
-import com.sedin.qna.interceptor.AuthenticationInterceptor;
-import com.sedin.qna.network.ApiResponseCode;
+import com.sedin.qna.article.comment.controller.CommentController;
+import com.sedin.qna.article.comment.model.CommentDto;
+import com.sedin.qna.article.comment.service.CommentService;
+import com.sedin.qna.authentication.service.JwtTokenProvider;
+import com.sedin.qna.common.configuration.SecurityConfiguration;
+import com.sedin.qna.common.response.ApiResponseCode;
+import com.sedin.qna.configuration.WithCustomMockUser;
 import com.sedin.qna.util.ApiDocumentUtil;
 import com.sedin.qna.util.DocumentFormatGenerator;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.RestDocumentationContextProvider;
@@ -25,7 +29,6 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,7 +40,6 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -52,18 +54,25 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.requestF
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(CommentController.class)
 @MockBean(JpaMetamodelMappingContext.class)
-@ExtendWith({RestDocumentationExtension.class})
+@ExtendWith(RestDocumentationExtension.class)
+@Import({
+        SecurityConfiguration.class,
+        JwtTokenProvider.class
+})
 @AutoConfigureRestDocs(uriScheme = "https", uriHost = "docs.api.com")
 class CommentControllerWebTest {
 
     private static final Long AUTHORIZED_ID = 1L;
     private static final Long ARTICLE_ID = 1L;
     private static final String AUTHORIZATION = "Authorization";
+    private static final String EMAIL = "cafe@mocha.com";
     private static final String CONTENT = "content";
     private static final String NAME = "author";
     private static final String PREFIX = "prefix";
@@ -79,35 +88,27 @@ class CommentControllerWebTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private AuthenticationInterceptor authenticationInterceptor;
-
-    @MockBean
     private CommentService commentService;
 
     private Account authenticatedAccount;
 
     @BeforeEach
-    void setUp(RestDocumentationContextProvider restDocumentation) throws Exception {
+    void setUp(RestDocumentationContextProvider restDocumentation) {
         mockMvc = MockMvcBuilders
                 .webAppContextSetup(context)
+                .apply(springSecurity())
                 .apply(documentationConfiguration(restDocumentation))
+                .alwaysDo(print())
                 .build();
 
         authenticatedAccount = Account.builder()
                 .id(AUTHORIZED_ID)
                 .build();
-
-        when(authenticationInterceptor.preHandle(any(), any(), any()))
-                .then(invocation -> {
-                    HttpServletRequest request = invocation.getArgument(0);
-                    request.setAttribute("account", authenticatedAccount);
-                    return true;
-                });
     }
 
     @Test
+    @WithCustomMockUser
     void When_Request_Create_Comment_With_Post_Method_And_Article_Id_Expect_HttpStatus_Is_Created() throws Exception {
-
         // given
         CommentDto.Response response = CommentDto.Response.builder()
                 .id(1L)
@@ -117,7 +118,7 @@ class CommentControllerWebTest {
                 .modifiedAt(LocalDateTime.now())
                 .build();
 
-        given(commentService.create(eq(authenticatedAccount), eq(ARTICLE_ID), any(CommentDto.Create.class)))
+        given(commentService.create(eq(EMAIL), eq(ARTICLE_ID), any(CommentDto.Create.class)))
                 .willReturn(response);
 
         // when
@@ -161,12 +162,11 @@ class CommentControllerWebTest {
                 );
 
         verify(commentService, times(1))
-                .create(eq(authenticatedAccount), eq(ARTICLE_ID), any(CommentDto.Create.class));
+                .create(eq(EMAIL), eq(ARTICLE_ID), any(CommentDto.Create.class));
     }
 
     @Test
     void When_Request_Read_All_Comments_With_Get_Method_Expect_HttpStatus_Is_OK() throws Exception {
-
         // given
         List<CommentDto.Response> responseList = List.of(CommentDto.Response.builder()
                         .id(1L)
@@ -219,7 +219,6 @@ class CommentControllerWebTest {
 
     @Test
     void When_Request_Comment_Detail_With_Get_Method_Expect_HttpStatus_Is_OK() throws Exception {
-
         // given
         CommentDto.Response response = CommentDto.Response.builder()
                 .id(1L)
@@ -265,8 +264,8 @@ class CommentControllerWebTest {
     }
 
     @Test
+    @WithCustomMockUser
     void When_Request_Update_Comment_With_Patch_Method_Expect_HttpStatus_Is_OK() throws Exception {
-
         // given
         CommentDto.Response response = CommentDto.Response.builder()
                 .id(1L)
@@ -282,7 +281,7 @@ class CommentControllerWebTest {
 
         String requestBody = objectMapper.writeValueAsString(update);
 
-        given(commentService.update(eq(authenticatedAccount), eq(ARTICLE_ID), eq(1L), any(CommentDto.Update.class)))
+        given(commentService.update(eq(EMAIL), eq(ARTICLE_ID), eq(1L), any(CommentDto.Update.class)))
                 .willReturn(response);
 
         // when
@@ -324,16 +323,16 @@ class CommentControllerWebTest {
                 );
 
         verify(commentService, times(1))
-                .update(eq(authenticatedAccount), eq(ARTICLE_ID), eq(1L), any(CommentDto.Update.class));
+                .update(eq(EMAIL), eq(ARTICLE_ID), eq(1L), any(CommentDto.Update.class));
     }
 
     @Test
+    @WithCustomMockUser
     void When_Request_Delete_Comment_With_Delete_Method_Expect_HttpStatus_Is_OK() throws Exception {
-
         // given
         doNothing()
                 .when(commentService)
-                .delete(authenticatedAccount, ARTICLE_ID, 1L);
+                .delete(EMAIL, ARTICLE_ID, 1L);
 
         // when
         ResultActions result = mockMvc.perform(delete("/api/articles/{articleId}/comments/{commentId}",
@@ -355,6 +354,6 @@ class CommentControllerWebTest {
                         )
                 ));
 
-        verify(commentService, times(1)).delete(any(Account.class), anyLong(), anyLong());
+        verify(commentService, times(1)).delete(any(String.class), anyLong(), anyLong());
     }
 }
