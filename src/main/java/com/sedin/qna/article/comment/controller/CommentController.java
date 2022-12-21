@@ -1,16 +1,15 @@
 package com.sedin.qna.article.comment.controller;
 
-import com.sedin.qna.account.model.Account;
 import com.sedin.qna.article.comment.model.CommentDto;
 import com.sedin.qna.article.comment.service.CommentService;
 import com.sedin.qna.common.response.ApiResponseDto;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -30,10 +29,10 @@ public class CommentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponseDto<CommentDto.ResponseOne> create(@RequestAttribute Account account,
+    public ApiResponseDto<CommentDto.ResponseOne> create(@AuthenticationPrincipal String email,
                                                          @PathVariable Long articleId,
                                                          @RequestBody @Valid CommentDto.Create create) {
-        return ApiResponseDto.OK(new CommentDto.ResponseOne(commentService.create(account, articleId, create)));
+        return ApiResponseDto.OK(new CommentDto.ResponseOne(commentService.create(email, articleId, create)));
     }
 
     @GetMapping
@@ -51,19 +50,19 @@ public class CommentController {
 
     @PatchMapping("{commentId}")
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponseDto<CommentDto.ResponseOne> update(@RequestAttribute Account account,
+    public ApiResponseDto<CommentDto.ResponseOne> update(@AuthenticationPrincipal String email,
                                                          @PathVariable Long articleId,
                                                          @PathVariable Long commentId,
                                                          @RequestBody @Valid CommentDto.Update update) {
-        return ApiResponseDto.OK(new CommentDto.ResponseOne(commentService.update(account, articleId, commentId, update)));
+        return ApiResponseDto.OK(new CommentDto.ResponseOne(commentService.update(email, articleId, commentId, update)));
     }
 
     @DeleteMapping("{commentId}")
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponseDto<String> delete(@RequestAttribute Account account,
+    public ApiResponseDto<String> delete(@AuthenticationPrincipal String email,
                                          @PathVariable Long articleId,
                                          @PathVariable Long commentId) {
-        commentService.delete(account, articleId, commentId);
+        commentService.delete(email, articleId, commentId);
         return ApiResponseDto.DEFAULT_OK;
     }
 }
