@@ -8,12 +8,10 @@ import java.util.Map;
 @Getter
 public class Docs {
 
-    Map<String, String> genders;
     Map<String, String> apiResponseCodes;
 
     @Builder
-    private Docs(Map<String, String> genders, Map<String, String> apiResponseCodes) {
-        this.genders = genders;
+    private Docs(Map<String, String> apiResponseCodes) {
         this.apiResponseCodes = apiResponseCodes;
     }
 }

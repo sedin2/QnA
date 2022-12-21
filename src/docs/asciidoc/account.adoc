@@ -38,8 +38,6 @@ include::{snippets}/common/custom-response-fields-apiResponseCodes.adoc[]
 
 include::{snippets}/create-account/request-fields.adoc[]
 
-include::{snippets}/common/custom-response-fields-genders.adoc[]
-
 ===== Request HTTP Example
 
 include::{snippets}/create-account/http-request.adoc[]
@@ -64,9 +62,6 @@ include::{snippets}/update-account/request-headers.adoc[]
 
 include::{snippets}/update-account/request-fields.adoc[]
 
-===== Path Parameters
-include::{snippets}/update-account/path-parameters.adoc[]
-
 ===== Request HTTP Example
 
 include::{snippets}/update-account/http-request.adoc[]
@@ -88,9 +83,6 @@ include::{snippets}/update-account/http-response.adoc[]
 
 ===== Request Header
 include::{snippets}/delete-account/request-headers.adoc[]
-
-===== Path Parameters
-include::{snippets}/delete-account/path-parameters.adoc[]
 
 ===== Request HTTP Example
 

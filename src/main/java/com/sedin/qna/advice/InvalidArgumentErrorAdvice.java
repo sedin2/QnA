@@ -1,7 +1,7 @@
 package com.sedin.qna.advice;
 
-import com.sedin.qna.network.ApiResponseCode;
-import com.sedin.qna.network.ApiResponseDto;
+import com.sedin.qna.common.response.ApiResponseCode;
+import com.sedin.qna.common.response.ApiResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -19,11 +19,6 @@ import java.util.Map;
 @RestControllerAdvice
 public class InvalidArgumentErrorAdvice {
 
-    /**
-     * 요청 한 메소드의 인자값이 유효하지 않을 때 에러 메세지를 리턴합니다.
-     *
-     * @return 에러 메세지
-     */
     /**
      * 요청 한 메소드의 인자값이 유효하지 않을 때 에러 메세지를 리턴합니다.
      * @param exception 인자값 예외
