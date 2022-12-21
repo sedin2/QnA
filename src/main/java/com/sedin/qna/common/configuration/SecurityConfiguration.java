@@ -21,7 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @RequiredArgsConstructor
-@EnableWebSecurity(debug = true)
+@EnableWebSecurity
 public class SecurityConfiguration {
 
     private final JwtTokenProvider jwtTokenProvider;
@@ -46,9 +46,9 @@ public class SecurityConfiguration {
                 .and()
                 .authorizeRequests()
                 .antMatchers(HttpMethod.POST, "/api/accounts", "/api/login").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/articles/**", "/api/articles/{articleId}/comments/**").permitAll()
-                .antMatchers( "/api/articles/**", "/api/articles/{articleId}/comments/**").hasRole("USER")
-                .antMatchers(HttpMethod.GET, "/api/docs/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/articles/**").permitAll()
+                .antMatchers("/api/articles/**").hasRole("USER")
+                .antMatchers(HttpMethod.GET, "/api/docs/**", "/favicon.ico").permitAll()
                 .antMatchers("/**").authenticated()
                 .anyRequest().permitAll()
                 .and()
