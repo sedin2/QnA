@@ -1,7 +1,7 @@
 package com.sedin.qna.article.comment.service;
 
 import com.sedin.qna.account.model.Account;
-import com.sedin.qna.account.service.AccountService;
+import com.sedin.qna.account.repository.AccountRepository;
 import com.sedin.qna.article.model.Article;
 import com.sedin.qna.article.repository.ArticleRepository;
 import com.sedin.qna.article.comment.model.Comment;
@@ -21,15 +21,17 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
 
-    private final AccountService accountService;
+    private final AccountRepository accountRepository;
     private final ArticleRepository articleRepository;
     private final CommentRepository commentRepository;
 
     @Override
     public CommentDto.Response create(String email, Long articleId, CommentDto.Create create) {
-        Account account = accountService.findAccount(email);
+        Account account = findAccount(email);
         Article article = findArticle(articleId);
-        return CommentDto.Response.of(commentRepository.save(create.toEntity(account, article)));
+        Comment comment = create.toEntity();
+        comment.attachToArticle(account, article);
+        return CommentDto.Response.of(commentRepository.save(comment));
     }
 
     @Override
@@ -48,19 +50,25 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentDto.Response update(String email, Long articleId, Long commentId, CommentDto.Update update) {
-        Account account = accountService.findAccount(email);
+        Account account = findAccount(email);
         Comment comment = findComment(articleId, commentId);
         checkPermissionBetweenAccountAndAuthor(account, comment.getAccount());
-        return CommentDto.Response.of(update.apply(comment));
+        comment.update(update.getContent());
+        return CommentDto.Response.of(comment);
     }
 
     @Override
     public void delete(String email, Long articleId, Long commentId) {
-        Account account = accountService.findAccount(email);
+        Account account = findAccount(email);
         Comment comment = findComment(articleId, commentId);
         checkPermissionBetweenAccountAndAuthor(account, comment.getAccount());
-        comment.getArticle().minusCommentsCount();
+        comment.detachToArticle();
         commentRepository.delete(comment);
+    }
+
+    public Account findAccount(String email) {
+        return accountRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException(email));
     }
 
     private Article findArticle(Long articleId) {
