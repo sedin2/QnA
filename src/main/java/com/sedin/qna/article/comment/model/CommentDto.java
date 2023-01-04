@@ -30,16 +30,10 @@ public class CommentDto {
             this.content = content;
         }
 
-        public Comment toEntity(Account account, Article article) {
-            Comment comment = Comment.builder()
+        public Comment toEntity() {
+            return Comment.builder()
                     .content(content)
-                    .author(account.getName())
-                    .account(account)
                     .build();
-
-            comment.attachArticle(article);
-
-            return comment;
         }
     }
 
@@ -56,10 +50,6 @@ public class CommentDto {
         @Builder
         private Update(String content) {
             this.content = content;
-        }
-
-        public Comment apply(Comment comment) {
-            return comment.update(content);
         }
     }
 

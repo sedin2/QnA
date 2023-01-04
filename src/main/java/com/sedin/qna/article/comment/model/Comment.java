@@ -56,13 +56,16 @@ public class Comment extends BaseTimeEntity {
         return this;
     }
 
-    public void attachArticle(Article article) {
-        if (this.article != null) {
-            this.article.getComments().remove(this);
-        }
-        
+    public void attachToArticle(Account account, Article article) {
+        this.author = account.getName();
+        this.account = account;
         this.article = article;
         article.getComments().add(this);
         article.plusCommentsCount();
+    }
+
+    public void detachToArticle() {
+        this.article.getComments().remove(this);
+        this.article.minusCommentsCount();
     }
 }
