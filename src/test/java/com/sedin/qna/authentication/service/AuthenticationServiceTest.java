@@ -73,7 +73,7 @@ class AuthenticationServiceTest {
                 .password(PASSWORD)
                 .build();
 
-        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLES_" + account.getRole().name()));
+        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + account.getRole().name()));
 
         given(accountRepository.findByEmail(EMAIL)).willReturn(Optional.of(account));
         given(passwordEncoder.matches(eq(PASSWORD), any(String.class))).willReturn(true);
