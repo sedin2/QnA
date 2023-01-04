@@ -122,6 +122,7 @@ class ArticleControllerWebTest {
                 .content(CONTENT)
                 .author(AUTHOR)
                 .commentsCount(0L)
+                .articleViewCount(0L)
                 .createdAt(LocalDateTime.now())
                 .modifiedAt(LocalDateTime.now())
                 .build();
@@ -163,6 +164,7 @@ class ArticleControllerWebTest {
                                         fieldWithPath("title").type(JsonFieldType.STRING).description("제목"),
                                         fieldWithPath("content").type(JsonFieldType.STRING).description("내용"),
                                         fieldWithPath("commentsCount").type(JsonFieldType.NUMBER).description("댓글 수"),
+                                        fieldWithPath("articleViewCount").type(JsonFieldType.NUMBER).description("조회 수"),
                                         fieldWithPath("author").type(JsonFieldType.STRING).description("작성자"),
                                         fieldWithPath("createdAt").type(JsonFieldType.STRING)
                                                 .attributes(DocumentFormatGenerator.getDateFormat())
@@ -185,6 +187,7 @@ class ArticleControllerWebTest {
                         .title(TITLE)
                         .author(AUTHOR)
                         .commentsCount(0L)
+                        .articleViewCount(0L)
                         .createdAt(LocalDateTime.now())
                         .modifiedAt(LocalDateTime.now())
                         .build(),
@@ -193,6 +196,7 @@ class ArticleControllerWebTest {
                         .title(TITLE)
                         .author(AUTHOR)
                         .commentsCount(0L)
+                        .articleViewCount(0L)
                         .createdAt(LocalDateTime.now())
                         .modifiedAt(LocalDateTime.now())
                         .build()
@@ -225,6 +229,7 @@ class ArticleControllerWebTest {
                                         fieldWithPath("title").type(JsonFieldType.STRING).description("제목"),
                                         fieldWithPath("author").type(JsonFieldType.STRING).description("작성자"),
                                         fieldWithPath("commentsCount").type(JsonFieldType.NUMBER).description("댓글 수"),
+                                        fieldWithPath("articleViewCount").type(JsonFieldType.NUMBER).description("조회 수"),
                                         fieldWithPath("createdAt").type(JsonFieldType.STRING)
                                                 .attributes(DocumentFormatGenerator.getDateFormat())
                                                 .description("생성시간"),
@@ -246,6 +251,7 @@ class ArticleControllerWebTest {
                 .content(CONTENT)
                 .author(AUTHOR)
                 .commentsCount(0L)
+                .articleViewCount(0L)
                 .comments(new ArrayList<>())
                 .createdAt(LocalDateTime.now())
                 .modifiedAt(LocalDateTime.now())
@@ -274,6 +280,7 @@ class ArticleControllerWebTest {
                                         fieldWithPath("content").type(JsonFieldType.STRING).description("내용"),
                                         fieldWithPath("author").type(JsonFieldType.STRING).description("작성자"),
                                         fieldWithPath("commentsCount").type(JsonFieldType.NUMBER).description("댓글 수"),
+                                        fieldWithPath("articleViewCount").type(JsonFieldType.NUMBER).description("조회 수"),
                                         fieldWithPath("comments").type(JsonFieldType.ARRAY).description("댓글"),
                                         fieldWithPath("createdAt").type(JsonFieldType.STRING)
                                                 .attributes(DocumentFormatGenerator.getDateFormat())
@@ -297,6 +304,7 @@ class ArticleControllerWebTest {
                 .content(PREFIX + CONTENT)
                 .author(AUTHOR)
                 .commentsCount(0L)
+                .articleViewCount(0L)
                 .createdAt(LocalDateTime.now())
                 .modifiedAt(LocalDateTime.now())
                 .build();
@@ -339,6 +347,7 @@ class ArticleControllerWebTest {
                                         fieldWithPath("content").type(JsonFieldType.STRING).description("내용"),
                                         fieldWithPath("author").type(JsonFieldType.STRING).description("작성자"),
                                         fieldWithPath("commentsCount").type(JsonFieldType.NUMBER).description("댓글 수"),
+                                        fieldWithPath("articleViewCount").type(JsonFieldType.NUMBER).description("조회 수"),
                                         fieldWithPath("createdAt").type(JsonFieldType.STRING)
                                                 .attributes(DocumentFormatGenerator.getDateFormat())
                                                 .description("생성시간"),
