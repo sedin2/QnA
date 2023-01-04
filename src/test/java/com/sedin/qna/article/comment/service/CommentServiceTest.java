@@ -1,7 +1,7 @@
 package com.sedin.qna.article.comment.service;
 
 import com.sedin.qna.account.model.Account;
-import com.sedin.qna.account.service.AccountService;
+import com.sedin.qna.account.repository.AccountRepository;
 import com.sedin.qna.article.comment.model.Comment;
 import com.sedin.qna.article.comment.model.CommentDto;
 import com.sedin.qna.article.comment.repository.CommentRepository;
@@ -39,7 +39,7 @@ class CommentServiceTest {
     private static final String TITLE = "title";
 
     @MockBean
-    private AccountService accountService = mock(AccountService.class);
+    private AccountRepository accountRepository = mock(AccountRepository.class);
 
     @MockBean
     private ArticleRepository articleRepository = mock(ArticleRepository.class);
@@ -54,7 +54,7 @@ class CommentServiceTest {
 
     @BeforeEach
     void prepare() {
-        commentService = new CommentServiceImpl(accountService, articleRepository, commentRepository);
+        commentService = new CommentServiceImpl(accountRepository, articleRepository, commentRepository);
 
         authenticatedAccount = Account.builder()
                 .id(1L)
@@ -84,9 +84,9 @@ class CommentServiceTest {
                 .account(authenticatedAccount)
                 .build();
 
-        given(accountService.findAccount(EMAIL)).willReturn(authenticatedAccount);
+        given(accountRepository.findByEmail(EMAIL)).willReturn(Optional.of(authenticatedAccount));
         given(articleRepository.findById(anyLong())).willReturn(Optional.of(article));
-        given(commentRepository.save(any())).willReturn(comment);
+        given(commentRepository.save(any(Comment.class))).willReturn(comment);
 
         // when
         CommentDto.Response response = commentService.create(EMAIL, ARTICLE_ID, create);
@@ -95,7 +95,7 @@ class CommentServiceTest {
         assertThat(response.getContent()).isEqualTo(CONTENT);
         assertThat(response.getAuthor()).isEqualTo(NAME);
 
-        verify(commentRepository, times(1)).save(any());
+        verify(commentRepository, times(1)).save(any(Comment.class));
     }
 
     @Test
@@ -173,7 +173,7 @@ class CommentServiceTest {
                 .content(PREFIX + CONTENT)
                 .build();
 
-        given(accountService.findAccount(EMAIL)).willReturn(authenticatedAccount);
+        given(accountRepository.findByEmail(EMAIL)).willReturn(Optional.of(authenticatedAccount));
         given(commentRepository.findByArticleIdAndId(anyLong(), anyLong())).willReturn(Optional.of(comment));
 
         // when
@@ -194,7 +194,7 @@ class CommentServiceTest {
                 .account(authenticatedAccount)
                 .build();
 
-        given(accountService.findAccount(EMAIL)).willReturn(authenticatedAccount);
+        given(accountRepository.findByEmail(EMAIL)).willReturn(Optional.of(authenticatedAccount));
         given(commentRepository.findByArticleIdAndId(anyLong(), anyLong())).willReturn(Optional.of(comment));
         doNothing().when(commentRepository).delete(comment);
 
