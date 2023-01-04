@@ -21,6 +21,8 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class AuthenticationService {
 
+    private static final String PREFIX = "ROLE_";
+
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final AccountRepository accountRepository;
@@ -33,7 +35,7 @@ public class AuthenticationService {
         }
 
         List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority("ROLES_" + account.getRole().name()));
+        authorities.add(new SimpleGrantedAuthority(PREFIX + account.getRole().name()));
         return AuthenticationDto.Response.of(jwtTokenProvider.encode(account.getEmail(), authorities));
     }
 
