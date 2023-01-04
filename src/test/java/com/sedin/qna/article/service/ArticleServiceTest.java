@@ -1,8 +1,7 @@
 package com.sedin.qna.article.service;
 
 import com.sedin.qna.account.model.Account;
-import com.sedin.qna.account.service.AccountService;
-import com.sedin.qna.account.service.AccountServiceImpl;
+import com.sedin.qna.account.repository.AccountRepository;
 import com.sedin.qna.article.model.Article;
 import com.sedin.qna.article.model.ArticleDto;
 import com.sedin.qna.article.repository.ArticleRepository;
@@ -42,7 +41,7 @@ class ArticleServiceTest {
     private ArticleService articleService;
 
     @MockBean
-    private AccountService accountService = mock(AccountServiceImpl.class);
+    private AccountRepository accountRepository = mock(AccountRepository.class);
 
     @MockBean
     private ArticleRepository articleRepository = mock(ArticleRepository.class);
@@ -51,7 +50,7 @@ class ArticleServiceTest {
 
     @BeforeEach
     void prepare() {
-        articleService = new ArticleServiceImpl(accountService, articleRepository);
+        articleService = new ArticleServiceImpl(accountRepository, articleRepository);
 
         authenticatedAccount = Account.builder()
                 .id(1L)
@@ -75,7 +74,7 @@ class ArticleServiceTest {
                 .account(authenticatedAccount)
                 .build();
 
-        given(accountService.findAccount(EMAIL)).willReturn(authenticatedAccount);
+        given(accountRepository.findByEmail(EMAIL)).willReturn(Optional.of(authenticatedAccount));
         given(articleRepository.save(any())).willReturn(article);
 
         // when
@@ -168,7 +167,7 @@ class ArticleServiceTest {
                 .content(PREFIX + CONTENT)
                 .build();
 
-        given(accountService.findAccount(EMAIL)).willReturn(authenticatedAccount);
+        given(accountRepository.findByEmail(EMAIL)).willReturn(Optional.of(authenticatedAccount));
         given(articleRepository.findById(1L)).willReturn(Optional.of(article));
 
         // when
@@ -191,7 +190,7 @@ class ArticleServiceTest {
                 .account(authenticatedAccount)
                 .build();
 
-        given(accountService.findAccount(EMAIL)).willReturn(authenticatedAccount);
+        given(accountRepository.findByEmail(EMAIL)).willReturn(Optional.of(authenticatedAccount));
         given(articleRepository.findById(1L)).willReturn(Optional.of(article));
         doNothing().when(articleRepository).delete(article);
 
