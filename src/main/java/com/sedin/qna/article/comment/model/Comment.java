@@ -57,6 +57,10 @@ public class Comment extends BaseTimeEntity {
     }
 
     public void attachToArticle(Account account, Article article) {
+        if (this.article != null) {
+            article.getComments().remove(this);
+        }
+
         this.author = account.getName();
         this.account = account;
         this.article = article;
