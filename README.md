@@ -33,7 +33,7 @@
 ### 📸📦️ 데이터베이스
 
 ##### DB ERD
-![image](https://user-images.githubusercontent.com/53131108/192137932-560dbdcb-b3cc-4bbf-88bc-24ff761b0388.png)
+![image](https://user-images.githubusercontent.com/53131108/210520503-cd84f33c-a0f0-4278-94c5-01ceaf681de8.png)
 
 </br>
 
