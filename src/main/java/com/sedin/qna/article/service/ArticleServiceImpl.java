@@ -39,9 +39,10 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public ArticleDto.ResponseDetail findById(Long id) {
-        return ArticleDto.ResponseDetail.of(findArticle(id));
+        Article article = findArticle(id);
+        article.increaseArticleViewCount();
+        return ArticleDto.ResponseDetail.of(article);
     }
 
     @Override
