@@ -1,7 +1,7 @@
 package com.sedin.qna.article.service;
 
 import com.sedin.qna.account.model.Account;
-import com.sedin.qna.account.service.AccountService;
+import com.sedin.qna.account.repository.AccountRepository;
 import com.sedin.qna.article.model.Article;
 import com.sedin.qna.article.model.ArticleDto;
 import com.sedin.qna.article.repository.ArticleRepository;
@@ -20,12 +20,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ArticleServiceImpl implements ArticleService {
 
-    private final AccountService accountService;
+    private final AccountRepository accountRepository;
     private final ArticleRepository articleRepository;
 
     @Override
     public ArticleDto.ResponseChange create(String email, ArticleDto.Create create) {
-        Account account = accountService.findAccount(email);
+        Account account = findAccount(email);
         Article article = create.toEntity(account);
         return ArticleDto.ResponseChange.of(articleRepository.save(article));
     }
@@ -47,7 +47,7 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     public ArticleDto.ResponseChange update(String email, Long id, ArticleDto.Update update) {
-        Account account = accountService.findAccount(email);
+        Account account = findAccount(email);
         Article article = findArticle(id);
         checkPermissionBetweenAccountAndAuthor(account, article.getAccount());
 
@@ -56,7 +56,7 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     public void delete(String email, Long id) {
-        Account account = accountService.findAccount(email);
+        Account account = findAccount(email);
         Article article = findArticle(id);
         checkPermissionBetweenAccountAndAuthor(account, article.getAccount());
 
@@ -68,6 +68,11 @@ public class ArticleServiceImpl implements ArticleService {
         return articleRepository.findAllEntityGraph(pageable).stream()
                 .map(ArticleDto.ResponseDetail::of)
                 .collect(Collectors.toList());
+    }
+
+    public Account findAccount(String email) {
+        return accountRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException(email));
     }
 
     private Article findArticle(Long id) {
