@@ -44,6 +44,9 @@ public class Article extends BaseTimeEntity {
     @Column(nullable = false)
     private Long commentsCount = 0L;
 
+    @Column(nullable = false)
+    private Long articleViewCount = 0L;
+
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL)
     private List<Comment> comments = new ArrayList<>();
 
