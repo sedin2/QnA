@@ -47,10 +47,8 @@ public class SecurityConfiguration {
                 .authorizeRequests()
                 .antMatchers(HttpMethod.POST, "/api/accounts", "/api/login").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/articles/**").permitAll()
-                .antMatchers("/api/articles/**").hasRole("USER")
                 .antMatchers(HttpMethod.GET, "/api/docs/**", "/favicon.ico").permitAll()
                 .antMatchers("/**").authenticated()
-                .anyRequest().permitAll()
                 .and()
                 .formLogin().disable();
 
