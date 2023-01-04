@@ -75,6 +75,7 @@ public class ArticleDto {
         private String content;
         private String author;
         private Long commentsCount;
+        private Long articleViewCount;
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
         private LocalDateTime createdAt;
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
@@ -82,12 +83,13 @@ public class ArticleDto {
 
         @Builder
         private ResponseChange(Long id, String title, String content, String author, Long commentsCount,
-                               LocalDateTime createdAt, LocalDateTime modifiedAt) {
+                               Long articleViewCount, LocalDateTime createdAt, LocalDateTime modifiedAt) {
             this.id = id;
             this.title = title;
             this.content = content;
             this.author = author;
             this.commentsCount = commentsCount;
+            this.articleViewCount = articleViewCount;
             this.createdAt = createdAt;
             this.modifiedAt = modifiedAt;
         }
@@ -99,6 +101,7 @@ public class ArticleDto {
                     .content(article.getContent())
                     .author(article.getAuthor())
                     .commentsCount(article.getCommentsCount())
+                    .articleViewCount(article.getArticleViewCount())
                     .createdAt(article.getCreatedAt())
                     .modifiedAt(article.getModifiedAt())
                     .build();
@@ -112,6 +115,7 @@ public class ArticleDto {
         private String title;
         private String author;
         private Long commentsCount;
+        private Long articleViewCount;
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
         private LocalDateTime createdAt;
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
@@ -119,11 +123,12 @@ public class ArticleDto {
 
         @Builder
         private ResponseAll(Long id, String title, String author, Long commentsCount,
-                            LocalDateTime createdAt, LocalDateTime modifiedAt) {
+                            Long articleViewCount, LocalDateTime createdAt, LocalDateTime modifiedAt) {
             this.id = id;
             this.title = title;
             this.author = author;
             this.commentsCount = commentsCount;
+            this.articleViewCount = articleViewCount;
             this.createdAt = createdAt;
             this.modifiedAt = modifiedAt;
         }
@@ -134,6 +139,7 @@ public class ArticleDto {
                     .title(article.getTitle())
                     .author(article.getAuthor())
                     .commentsCount(article.getCommentsCount())
+                    .articleViewCount(article.getArticleViewCount())
                     .createdAt(article.getCreatedAt())
                     .modifiedAt(article.getModifiedAt())
                     .build();
@@ -148,6 +154,7 @@ public class ArticleDto {
         private String content;
         private String author;
         private Long commentsCount;
+        private Long articleViewCount;
         private List<CommentDto.Response> comments;
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
         private LocalDateTime createdAt;
@@ -156,12 +163,14 @@ public class ArticleDto {
 
         @Builder
         private ResponseDetail(Long id, String title, String content, String author, Long commentsCount,
-                               List<CommentDto.Response> comments, LocalDateTime createdAt, LocalDateTime modifiedAt) {
+                               Long articleViewCount, List<CommentDto.Response> comments,
+                               LocalDateTime createdAt, LocalDateTime modifiedAt) {
             this.id = id;
             this.title = title;
             this.content = content;
             this.author = author;
             this.commentsCount = commentsCount;
+            this.articleViewCount = articleViewCount;
             this.comments = comments;
             this.createdAt = createdAt;
             this.modifiedAt = modifiedAt;
@@ -174,6 +183,7 @@ public class ArticleDto {
                     .content(article.getContent())
                     .author(article.getAuthor())
                     .commentsCount(article.getCommentsCount())
+                    .articleViewCount(article.getArticleViewCount())
                     .comments(article.getComments().stream().map(CommentDto.Response::of).collect(Collectors.toList()))
                     .createdAt(article.getCreatedAt())
                     .modifiedAt(article.getModifiedAt())
