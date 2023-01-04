@@ -133,11 +133,13 @@ class ArticleServiceTest {
         given(articleRepository.findById(anyLong())).willReturn(Optional.of(article));
 
         // when
+        articleService.findById(1L);
         ArticleDto.ResponseDetail response = articleService.findById(1L);
 
         // then
         assertThat(response.getId()).isEqualTo(1L);
         assertThat(response.getAuthor()).isEqualTo(NAME);
+        assertThat(response.getArticleViewCount()).isSameAs(2L);
     }
 
     @Test
