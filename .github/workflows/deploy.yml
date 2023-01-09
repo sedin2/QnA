@@ -19,6 +19,13 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
+    # 로컬 서버용 Properties 생성 & 작성
+    - name: Create Local-Properties
+      run: touch ./src/main/resources/application-local.properties
+
+    - name: Write Local-Properties
+      run: echo "${{ secrets.LOCAL_PROPERTIES }}" > ./src/main/resources/application-local.properties
+
     # 개발 서버용 Properties 생성 & 작성
     - name: Create Dev-Properties
       run: touch ./src/main/resources/application-dev.properties
