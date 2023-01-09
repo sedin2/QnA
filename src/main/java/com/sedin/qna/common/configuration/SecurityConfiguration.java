@@ -5,13 +5,12 @@ import com.sedin.qna.authentication.filter.CustomAuthenticationEntryPoint;
 import com.sedin.qna.authentication.filter.JwtAuthenticationFilter;
 import com.sedin.qna.authentication.service.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,8 +26,16 @@ public class SecurityConfiguration {
     private final JwtTokenProvider jwtTokenProvider;
 
     @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return web -> web.ignoring().requestMatchers(PathRequest.toStaticResources().atCommonLocations());
+    @Order(0)
+    SecurityFilterChain resources(HttpSecurity http) throws Exception {
+        http
+                .requestMatchers(matchers -> matchers.antMatchers("/static/**"))
+                .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll())
+                .requestCache().disable()
+                .securityContext().disable()
+                .sessionManagement().disable();
+
+        return http.build();
     }
 
     @Bean
@@ -36,6 +43,7 @@ public class SecurityConfiguration {
         http.cors()
                 .and()
                 .csrf().disable()
+                .formLogin().disable()
                 .httpBasic().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
@@ -47,10 +55,8 @@ public class SecurityConfiguration {
                 .authorizeRequests()
                 .antMatchers(HttpMethod.POST, "/api/accounts", "/api/login").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/articles/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/docs/**", "/favicon.ico").permitAll()
-                .antMatchers("/**").authenticated()
-                .and()
-                .formLogin().disable();
+                .antMatchers(HttpMethod.GET, "/api/docs/**").permitAll()
+                .antMatchers("/**").authenticated();
 
         return http.build();
     }
