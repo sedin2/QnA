@@ -19,15 +19,19 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    # 개발 서버용 Properties
-    - name: Dev-Properties
-    - run: touch ./src/main/resources/application-dev.properties
-    - run: echo "${{ secrets.DEV_PROPERTIES }}" > ./src/main/resources/application-dev.properties
+    # 개발 서버용 Properties 생성 & 작성
+    - name: Create Dev-Properties
+      run: touch ./src/main/resources/application-dev.properties
 
-    # 운영 서버용 Properties
-    - name: Production-Properties
-    - run: touch ./src/main/resources/application-production.properties
-    - run: echo "${{ secrets.PRODUCTION_PROPERTIES }}" > ./src/main/resources/application-production.properties
+    - name: Write Dev-Properties
+      run: echo "${{ secrets.DEV_PROPERTIES }}" > ./src/main/resources/application-dev.properties
+
+    # 운영 서버용 Properties 생성 & 작성
+    - name: Create Production-Properties
+      run: touch ./src/main/resources/application-production.properties
+
+    - name: Write Production-Properties
+      run: echo "${{ secrets.PRODUCTION_PROPERTIES }}" > ./src/main/resources/application-production.properties
 
     # (2) JDK 11 세팅
     - name: Set up JDK 11
