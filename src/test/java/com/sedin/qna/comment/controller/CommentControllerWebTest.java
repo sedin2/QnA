@@ -1,9 +1,10 @@
-package com.sedin.qna.article.comment.controller;
+package com.sedin.qna.comment.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sedin.qna.account.model.Account;
-import com.sedin.qna.article.comment.model.CommentDto;
-import com.sedin.qna.article.comment.service.CommentService;
+import com.sedin.qna.comment.controller.CommentController;
+import com.sedin.qna.comment.model.CommentDto;
+import com.sedin.qna.comment.service.CommentService;
 import com.sedin.qna.authentication.service.JwtTokenProvider;
 import com.sedin.qna.common.configuration.SecurityConfiguration;
 import com.sedin.qna.common.response.ApiResponseCode;
