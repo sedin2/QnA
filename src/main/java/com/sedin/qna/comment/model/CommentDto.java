@@ -1,8 +1,6 @@
-package com.sedin.qna.article.comment.model;
+package com.sedin.qna.comment.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.sedin.qna.account.model.Account;
-import com.sedin.qna.article.model.Article;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package com.sedin.qna.article.comment.model;
+package com.sedin.qna.comment.model;
 
 import com.sedin.qna.account.model.Account;
 import com.sedin.qna.article.model.Article;
@@ -20,7 +20,7 @@ import javax.persistence.Table;
 
 @Entity
 @Getter
-@Table(name = "Comment")
+@Table(name = "comment")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Comment extends BaseTimeEntity {
 

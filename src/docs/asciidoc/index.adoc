@@ -35,4 +35,6 @@ API에 관계없이 아래 사항을 지켜주셔야 합니다.
 
 === link:./article.html[Article API]
 
+=== link:./recommend-article.html[Recommend Article API]
+
 === link:./comment.html[Comment API]

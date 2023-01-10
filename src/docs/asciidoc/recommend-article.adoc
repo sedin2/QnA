@@ -1,0 +1,78 @@
+ifndef::snippets[]
+:snippets: ../build/generated-snippets
+endif::[]
+= API Document
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 4
+:sectlinks:
+
+=== link:./index.html[Home]
+
+[[introduction]]
+== 소개
+
+게시글 추천 API
+
+[[common]]
+== 공통 사항
+
+=== Common Response
+
+include::{snippets}/common/custom-response-fields.adoc[]
+
+include::{snippets}/common/custom-response-fields-apiResponseCodes.adoc[]
+
+
+&#160;
+
+
+== 게시글 추천 API
+
+[[Recommend-Article-create]]
+=== 추가
+
+==== Request
+
+include::{snippets}/create-recommend-article/request-headers.adoc[]
+
+include::{snippets}/create-recommend-article/path-parameters.adoc[]
+
+===== Request HTTP Example
+
+include::{snippets}/create-recommend-article/http-request.adoc[]
+
+==== Response
+
+include::{snippets}/create-recommend-article/response-body.adoc[]
+
+===== Response HTTP Example
+
+include::{snippets}/create-recommend-article/http-response.adoc[]
+
+&#160;
+
+[[Recommend-Article-delete]]
+=== 삭제
+
+==== Request
+
+===== Request Header
+include::{snippets}/delete-recommend-article/request-headers.adoc[]
+
+===== Path Parameters
+include::{snippets}/delete-recommend-article/path-parameters.adoc[]
+
+===== Request HTTP Example
+
+include::{snippets}/delete-recommend-article/http-request.adoc[]
+
+==== Response
+
+===== Response HTTP Example
+
+include::{snippets}/delete-recommend-article/http-response.adoc[]
+
+&#160;

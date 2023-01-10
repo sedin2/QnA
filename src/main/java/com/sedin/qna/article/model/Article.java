@@ -1,7 +1,7 @@
 package com.sedin.qna.article.model;
 
 import com.sedin.qna.account.model.Account;
-import com.sedin.qna.article.comment.model.Comment;
+import com.sedin.qna.comment.model.Comment;
 import com.sedin.qna.common.model.BaseTimeEntity;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -23,7 +23,7 @@ import java.util.List;
 
 @Entity
 @Getter
-@Table(name = "Article")
+@Table(name = "article")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Article extends BaseTimeEntity {
 

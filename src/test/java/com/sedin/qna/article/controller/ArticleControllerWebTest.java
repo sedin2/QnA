@@ -1,7 +1,6 @@
 package com.sedin.qna.article.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sedin.qna.account.model.Account;
 import com.sedin.qna.article.model.ArticleDto;
 import com.sedin.qna.article.service.ArticleService;
 import com.sedin.qna.authentication.service.JwtTokenProvider;
@@ -24,12 +23,11 @@ import org.springframework.http.MediaType;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.payload.JsonFieldType;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.filter.CharacterEncodingFilter;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -72,7 +70,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureRestDocs(uriScheme = "https", uriHost = "docs.api.com")
 class ArticleControllerWebTest {
 
-    private static final Long AUTHORIZED_ID = 1L;
     private static final String PREFIX = "prefix";
     private static final String EMAIL = "cafe@mocha.com";
     private static final String TITLE = "title";
@@ -94,27 +91,20 @@ class ArticleControllerWebTest {
     @MockBean
     private ArticleService articleService;
 
-    private Account authenticatedAccount;
-
     @BeforeEach
     void setUp(RestDocumentationContextProvider restDocumentation) {
         mockMvc = MockMvcBuilders
                 .webAppContextSetup(context)
+                .addFilter(new CharacterEncodingFilter(StandardCharsets.UTF_8.name(), true))
                 .defaultResponseCharacterEncoding(StandardCharsets.UTF_8)
                 .apply(springSecurity())
                 .apply(documentationConfiguration(restDocumentation))
-                .build();
-
-        authenticatedAccount = Account.builder()
-                .id(AUTHORIZED_ID)
                 .build();
     }
 
     @Test
     @WithCustomMockUser
     void When_Request_Create_Article_With_Post_Method_Expect_HttpStatus_Is_Created() throws Exception {
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         // given
         ArticleDto.ResponseChange response = ArticleDto.ResponseChange.builder()
                 .id(1L)

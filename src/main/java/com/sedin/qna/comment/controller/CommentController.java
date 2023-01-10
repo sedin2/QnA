@@ -1,7 +1,7 @@
-package com.sedin.qna.article.comment.controller;
+package com.sedin.qna.comment.controller;
 
-import com.sedin.qna.article.comment.model.CommentDto;
-import com.sedin.qna.article.comment.service.CommentService;
+import com.sedin.qna.comment.model.CommentDto;
+import com.sedin.qna.comment.service.CommentService;
 import com.sedin.qna.common.response.ApiResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
