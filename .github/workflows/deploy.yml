@@ -19,6 +19,13 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
+    # 테스트용 Properties 생성 & 작성
+    - name: Create Test-Properties
+      run: touch ./src/main/resources/application-test.properties
+
+    - name: Write Test-Properties
+      run: echo "${{ secrets.TEST_PROPERTIES }}" > ./src/main/resources/application-test.properties
+
     # 로컬 서버용 Properties 생성 & 작성
     - name: Create Local-Properties
       run: touch ./src/main/resources/application-local.properties
