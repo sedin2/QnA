@@ -1,8 +1,6 @@
 package com.sedin.qna.comment.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sedin.qna.account.model.Account;
-import com.sedin.qna.comment.controller.CommentController;
 import com.sedin.qna.comment.model.CommentDto;
 import com.sedin.qna.comment.service.CommentService;
 import com.sedin.qna.authentication.service.JwtTokenProvider;
@@ -28,6 +26,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.filter.CharacterEncodingFilter;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -68,7 +67,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureRestDocs(uriScheme = "https", uriHost = "docs.api.com")
 class CommentControllerWebTest {
 
-    private static final Long AUTHORIZED_ID = 1L;
     private static final Long ARTICLE_ID = 1L;
     private static final String AUTHORIZATION = "Authorization";
     private static final String EMAIL = "cafe@mocha.com";
@@ -89,19 +87,14 @@ class CommentControllerWebTest {
     @MockBean
     private CommentService commentService;
 
-    private Account authenticatedAccount;
-
     @BeforeEach
     void setUp(RestDocumentationContextProvider restDocumentation) {
         mockMvc = MockMvcBuilders
                 .webAppContextSetup(context)
+                .addFilter(new CharacterEncodingFilter(StandardCharsets.UTF_8.name(), true))
                 .defaultResponseCharacterEncoding(StandardCharsets.UTF_8)
                 .apply(springSecurity())
                 .apply(documentationConfiguration(restDocumentation))
-                .build();
-
-        authenticatedAccount = Account.builder()
-                .id(AUTHORIZED_ID)
                 .build();
     }
 

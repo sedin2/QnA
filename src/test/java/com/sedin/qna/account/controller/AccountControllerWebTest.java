@@ -34,6 +34,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.filter.CharacterEncodingFilter;
 
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;
@@ -127,6 +128,7 @@ class AccountControllerWebTest {
     void setUp(RestDocumentationContextProvider restDocumentation) {
         this.mockMvc = MockMvcBuilders
                 .webAppContextSetup(context)
+                .addFilter(new CharacterEncodingFilter(StandardCharsets.UTF_8.name(), true))
                 .defaultResponseCharacterEncoding(StandardCharsets.UTF_8)
                 .apply(springSecurity())
                 .apply(documentationConfiguration(restDocumentation))
