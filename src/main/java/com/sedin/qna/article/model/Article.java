@@ -49,9 +49,6 @@ public class Article extends BaseTimeEntity {
     private Long articleViewCount = 0L;
 
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL)
-    private List<RecommendArticle> recommendArticles = new ArrayList<>();
-
-    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL)
     private List<Comment> comments = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)

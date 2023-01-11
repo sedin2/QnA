@@ -136,14 +136,14 @@ public class ArticleDto {
             this.modifiedAt = modifiedAt;
         }
 
-        public static ResponseAll of(Article article) {
+        public static ResponseAll of(Article article, Long recommendArticleCount) {
             return ResponseAll.builder()
                     .id(article.getId())
                     .title(article.getTitle())
                     .author(article.getAuthor())
                     .commentsCount(article.getCommentsCount())
                     .articleViewCount(article.getArticleViewCount())
-                    .recommendArticleCount((long) article.getRecommendArticles().size())
+                    .recommendArticleCount(recommendArticleCount)
                     .createdAt(article.getCreatedAt())
                     .modifiedAt(article.getModifiedAt())
                     .build();
@@ -182,7 +182,7 @@ public class ArticleDto {
             this.modifiedAt = modifiedAt;
         }
 
-        public static ResponseDetail of(Article article) {
+        public static ResponseDetail of(Article article, Long recommendArticleCount) {
             return ResponseDetail.builder()
                     .id(article.getId())
                     .title(article.getTitle())
@@ -190,7 +190,7 @@ public class ArticleDto {
                     .author(article.getAuthor())
                     .commentsCount(article.getCommentsCount())
                     .articleViewCount(article.getArticleViewCount())
-                    .recommendArticleCount((long) article.getRecommendArticles().size())
+                    .recommendArticleCount(recommendArticleCount)
                     .comments(article.getComments().stream().map(CommentDto.Response::of).collect(Collectors.toList()))
                     .createdAt(article.getCreatedAt())
                     .modifiedAt(article.getModifiedAt())

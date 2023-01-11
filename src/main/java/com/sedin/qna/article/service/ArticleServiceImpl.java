@@ -7,6 +7,7 @@ import com.sedin.qna.article.model.ArticleDto;
 import com.sedin.qna.article.repository.ArticleRepository;
 import com.sedin.qna.common.exception.NotFoundException;
 import com.sedin.qna.common.exception.PermissionToAccessException;
+import com.sedin.qna.recommendarticle.repository.RecommendArticleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ public class ArticleServiceImpl implements ArticleService {
 
     private final AccountRepository accountRepository;
     private final ArticleRepository articleRepository;
+    private final RecommendArticleRepository recommendArticleRepository;
 
     @Override
     public ArticleDto.ResponseChange create(String email, ArticleDto.Create create) {
@@ -34,7 +36,7 @@ public class ArticleServiceImpl implements ArticleService {
     @Transactional(readOnly = true)
     public List<ArticleDto.ResponseAll> findAll(Pageable pageable) {
         return articleRepository.findAll(pageable).stream()
-                .map(ArticleDto.ResponseAll::of)
+                .map(article -> ArticleDto.ResponseAll.of(article, recommendArticleRepository.countByArticle(article)))
                 .collect(Collectors.toList());
     }
 
@@ -42,7 +44,7 @@ public class ArticleServiceImpl implements ArticleService {
     public ArticleDto.ResponseDetail findById(Long id) {
         Article article = findArticle(id);
         article.increaseArticleViewCount();
-        return ArticleDto.ResponseDetail.of(article);
+        return ArticleDto.ResponseDetail.of(article, recommendArticleRepository.countByArticle(article));
     }
 
     @Override
@@ -66,7 +68,7 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     public List<ArticleDto.ResponseDetail> findAllWithComments(Pageable pageable) {
         return articleRepository.findAllEntityGraph(pageable).stream()
-                .map(ArticleDto.ResponseDetail::of)
+                .map(article -> ArticleDto.ResponseDetail.of(article, recommendArticleRepository.countByArticle(article)))
                 .collect(Collectors.toList());
     }
 
@@ -85,5 +87,4 @@ public class ArticleServiceImpl implements ArticleService {
             throw new PermissionToAccessException();
         }
     }
-
 }
