@@ -3,7 +3,6 @@ package com.sedin.qna.article.model;
 import com.sedin.qna.account.model.Account;
 import com.sedin.qna.comment.model.Comment;
 import com.sedin.qna.common.model.BaseTimeEntity;
-import com.sedin.qna.recommendarticle.model.RecommendArticle;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
