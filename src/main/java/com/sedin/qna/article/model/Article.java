@@ -8,6 +8,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Formula;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -47,6 +48,9 @@ public class Article extends BaseTimeEntity {
 
     @Column(nullable = false)
     private Long articleViewCount = 0L;
+
+    @Formula("(select count(r.recommend_article_id) from recommend_article r where r.article_id = article_id)")
+    private Long recommendArticleCount = 0L;
 
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL)
     private List<Comment> comments = new ArrayList<>();
