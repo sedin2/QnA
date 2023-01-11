@@ -3,6 +3,7 @@ package com.sedin.qna.article.model;
 import com.sedin.qna.account.model.Account;
 import com.sedin.qna.comment.model.Comment;
 import com.sedin.qna.common.model.BaseTimeEntity;
+import com.sedin.qna.recommendarticle.model.RecommendArticle;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -46,6 +47,9 @@ public class Article extends BaseTimeEntity {
 
     @Column(nullable = false)
     private Long articleViewCount = 0L;
+
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL)
+    private List<RecommendArticle> recommendArticles = new ArrayList<>();
 
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL)
     private List<Comment> comments = new ArrayList<>();
