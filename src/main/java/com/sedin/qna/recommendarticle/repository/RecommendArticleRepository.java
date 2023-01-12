@@ -14,4 +14,6 @@ public interface RecommendArticleRepository extends JpaRepository<RecommendArtic
     boolean existsByAccountAndArticle(Account account, Article article);
 
     Optional<RecommendArticle> findByAccountAndArticle(Account account, Article article);
+
+    Long countByArticle(Article article);
 }

@@ -85,5 +85,4 @@ public class ArticleServiceImpl implements ArticleService {
             throw new PermissionToAccessException();
         }
     }
-
 }

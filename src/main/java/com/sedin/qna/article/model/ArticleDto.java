@@ -116,6 +116,7 @@ public class ArticleDto {
         private String author;
         private Long commentsCount;
         private Long articleViewCount;
+        private Long recommendArticleCount;
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
         private LocalDateTime createdAt;
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
@@ -123,12 +124,14 @@ public class ArticleDto {
 
         @Builder
         private ResponseAll(Long id, String title, String author, Long commentsCount,
-                            Long articleViewCount, LocalDateTime createdAt, LocalDateTime modifiedAt) {
+                            Long articleViewCount, Long recommendArticleCount,
+                            LocalDateTime createdAt, LocalDateTime modifiedAt) {
             this.id = id;
             this.title = title;
             this.author = author;
             this.commentsCount = commentsCount;
             this.articleViewCount = articleViewCount;
+            this.recommendArticleCount = recommendArticleCount;
             this.createdAt = createdAt;
             this.modifiedAt = modifiedAt;
         }
@@ -140,6 +143,7 @@ public class ArticleDto {
                     .author(article.getAuthor())
                     .commentsCount(article.getCommentsCount())
                     .articleViewCount(article.getArticleViewCount())
+                    .recommendArticleCount(article.getRecommendArticleCount())
                     .createdAt(article.getCreatedAt())
                     .modifiedAt(article.getModifiedAt())
                     .build();
@@ -155,6 +159,7 @@ public class ArticleDto {
         private String author;
         private Long commentsCount;
         private Long articleViewCount;
+        private Long recommendArticleCount;
         private List<CommentDto.Response> comments;
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
         private LocalDateTime createdAt;
@@ -163,7 +168,7 @@ public class ArticleDto {
 
         @Builder
         private ResponseDetail(Long id, String title, String content, String author, Long commentsCount,
-                               Long articleViewCount, List<CommentDto.Response> comments,
+                               Long articleViewCount, Long recommendArticleCount, List<CommentDto.Response> comments,
                                LocalDateTime createdAt, LocalDateTime modifiedAt) {
             this.id = id;
             this.title = title;
@@ -171,6 +176,7 @@ public class ArticleDto {
             this.author = author;
             this.commentsCount = commentsCount;
             this.articleViewCount = articleViewCount;
+            this.recommendArticleCount = recommendArticleCount;
             this.comments = comments;
             this.createdAt = createdAt;
             this.modifiedAt = modifiedAt;
@@ -184,6 +190,7 @@ public class ArticleDto {
                     .author(article.getAuthor())
                     .commentsCount(article.getCommentsCount())
                     .articleViewCount(article.getArticleViewCount())
+                    .recommendArticleCount(article.getRecommendArticleCount())
                     .comments(article.getComments().stream().map(CommentDto.Response::of).collect(Collectors.toList()))
                     .createdAt(article.getCreatedAt())
                     .modifiedAt(article.getModifiedAt())

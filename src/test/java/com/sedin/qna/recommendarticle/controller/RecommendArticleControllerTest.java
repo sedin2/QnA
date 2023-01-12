@@ -1,14 +1,11 @@
 package com.sedin.qna.recommendarticle.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sedin.qna.account.model.Account;
 import com.sedin.qna.authentication.service.JwtTokenProvider;
 import com.sedin.qna.common.configuration.SecurityConfiguration;
 import com.sedin.qna.common.response.ApiResponseDto;
 import com.sedin.qna.configuration.WithCustomMockUser;
 import com.sedin.qna.recommendarticle.service.RecommendArticleService;
 import com.sedin.qna.util.ApiDocumentUtil;
-import com.sedin.qna.util.DocumentFormatGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,18 +18,14 @@ import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
-import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
@@ -40,16 +33,10 @@ import static org.springframework.restdocs.headers.HeaderDocumentation.requestHe
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.payload.PayloadDocumentation.beneathPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
-import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -104,8 +91,7 @@ class RecommendArticleControllerTest {
                 .characterEncoding(StandardCharsets.UTF_8));
 
         // then
-        result.andDo(print())
-                .andExpect(status().isCreated())
+        result.andExpect(status().isCreated())
                 .andExpect(jsonPath("$.code").value("OK"))
                 .andDo(document("create-recommend-article",
                         ApiDocumentUtil.getDocumentRequest(),
@@ -132,8 +118,7 @@ class RecommendArticleControllerTest {
                 .characterEncoding(StandardCharsets.UTF_8));
 
         // then
-        result.andDo(print())
-                .andExpect(status().isOk())
+        result.andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("OK"))
                 .andDo(document("delete-recommend-article",
                         ApiDocumentUtil.getDocumentRequest(),

@@ -178,6 +178,7 @@ class ArticleControllerWebTest {
                         .author(AUTHOR)
                         .commentsCount(0L)
                         .articleViewCount(0L)
+                        .recommendArticleCount(0L)
                         .createdAt(LocalDateTime.now())
                         .modifiedAt(LocalDateTime.now())
                         .build(),
@@ -187,6 +188,7 @@ class ArticleControllerWebTest {
                         .author(AUTHOR)
                         .commentsCount(0L)
                         .articleViewCount(0L)
+                        .recommendArticleCount(0L)
                         .createdAt(LocalDateTime.now())
                         .modifiedAt(LocalDateTime.now())
                         .build()
@@ -220,6 +222,7 @@ class ArticleControllerWebTest {
                                         fieldWithPath("author").type(JsonFieldType.STRING).description("작성자"),
                                         fieldWithPath("commentsCount").type(JsonFieldType.NUMBER).description("댓글 수"),
                                         fieldWithPath("articleViewCount").type(JsonFieldType.NUMBER).description("조회 수"),
+                                        fieldWithPath("recommendArticleCount").type(JsonFieldType.NUMBER).description("게시글 추천 수"),
                                         fieldWithPath("createdAt").type(JsonFieldType.STRING)
                                                 .attributes(DocumentFormatGenerator.getDateFormat())
                                                 .description("생성시간"),
@@ -242,6 +245,7 @@ class ArticleControllerWebTest {
                 .author(AUTHOR)
                 .commentsCount(0L)
                 .articleViewCount(0L)
+                .recommendArticleCount(0L)
                 .comments(new ArrayList<>())
                 .createdAt(LocalDateTime.now())
                 .modifiedAt(LocalDateTime.now())
@@ -271,6 +275,7 @@ class ArticleControllerWebTest {
                                         fieldWithPath("author").type(JsonFieldType.STRING).description("작성자"),
                                         fieldWithPath("commentsCount").type(JsonFieldType.NUMBER).description("댓글 수"),
                                         fieldWithPath("articleViewCount").type(JsonFieldType.NUMBER).description("조회 수"),
+                                        fieldWithPath("recommendArticleCount").type(JsonFieldType.NUMBER).description("게시글 추천 수"),
                                         fieldWithPath("comments").type(JsonFieldType.ARRAY).description("댓글"),
                                         fieldWithPath("createdAt").type(JsonFieldType.STRING)
                                                 .attributes(DocumentFormatGenerator.getDateFormat())
