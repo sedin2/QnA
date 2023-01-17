@@ -73,17 +73,20 @@ class RecommendArticleServiceTest {
     @Test
     @DisplayName("게시글 추천 생성 시 - 계정, 게시글은 존재하고 추천은 존재 하지 않을 때 - 성공")
     void createRecommendArticleWithSuccess() {
+        // when
         ApiResponseDto<String> response = recommendArticleService.createRecommendArticle(account.getEmail(), article.getId());
+
+        // then
         assertThat(response.getCode()).isSameAs(ApiResponseCode.OK);
     }
 
     @Test
     @DisplayName("게시글 추천 생성 시 - 첫 번째 추천은 성공하고 두 번째 추천은 중복(한 계정당 한 게시글에 추천은 1개만 가능) - 실패")
     void createRecommendArticleWithFail() {
-        // 첫 번째 추천
+        // given & when
         recommendArticleService.createRecommendArticle(account.getEmail(), article.getId());
         
-        // 두 번째 추천
+        // then
         assertThatThrownBy(() -> recommendArticleService.createRecommendArticle(account.getEmail(), article.getId()))
                 .isInstanceOf(DuplicatedException.class);
     }
@@ -91,20 +94,22 @@ class RecommendArticleServiceTest {
     @Test
     @DisplayName("게시글 추천 삭제 시 - 계정, 게시글, 추천이 모두 존재할 때 - 성공")
     void deleteRecommendArticleWithSuccess() {
+        // given
         recommendArticleService.createRecommendArticle(account.getEmail(), article.getId());
         em.flush();
         em.clear();
 
+        // when
         ApiResponseDto<String> response = recommendArticleService.deleteRecommendArticle(account.getEmail(), article.getId());
-        em.flush();
-        em.clear();
 
+        // then
         assertThat(response.getCode()).isSameAs(ApiResponseCode.OK);
     }
 
     @Test
     @DisplayName("게시글 추천 삭제 시 - 추천이 존재 하지 않을 때 - 실패")
     void deleteRecommendArticleWithFail() {
+        // when & then
         assertThatThrownBy(() -> recommendArticleService.deleteRecommendArticle(account.getEmail(), article.getId()))
                 .isInstanceOf(NotFoundException.class);
     }
