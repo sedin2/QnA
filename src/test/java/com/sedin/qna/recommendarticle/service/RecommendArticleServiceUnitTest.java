@@ -20,8 +20,11 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.never;
 
 class RecommendArticleServiceUnitTest {
 
@@ -48,7 +51,8 @@ class RecommendArticleServiceUnitTest {
 
     @BeforeEach
     void setUp() {
-        recommendArticleService = new RecommendArticleServiceImpl(accountRepository, articleRepository, recommendArticleRepository);
+        recommendArticleService = new RecommendArticleServiceImpl(accountRepository,
+                articleRepository, recommendArticleRepository);
 
         account = Account.builder()
                 .id(ACCOUNT_ID)
@@ -70,30 +74,32 @@ class RecommendArticleServiceUnitTest {
     @DisplayName("계정, 게시글은 존재하고 추천은 존재하지 않을 때 - 게시글 추천 생성 시 - 등록한다")
     void createRecommendArticleWithSuccess(){
         // given
-        when(accountRepository.findByEmail(EMAIL)).thenReturn(Optional.of(account));
-        when(articleRepository.findById(ARTICLE_ID)).thenReturn(Optional.of(article));
-        when(recommendArticleRepository.existsByAccountAndArticle(account, article))
-                .thenReturn(false);
+        given(accountRepository.findByEmail(EMAIL)).willReturn(Optional.of(account));
+        given(articleRepository.findById(ARTICLE_ID)).willReturn(Optional.of(article));
+        given(recommendArticleRepository.existsByAccountAndArticle(account, article))
+                .willReturn(false);
 
         // when
         ApiResponseDto<String> response = recommendArticleService.createRecommendArticle(EMAIL, ARTICLE_ID);
 
         // then
         assertThat(response.getCode()).isSameAs(ApiResponseCode.OK);
+        then(recommendArticleRepository).should().save(any(RecommendArticle.class));
     }
 
     @Test
     @DisplayName("이미 추천이 존재할 때 - 게시글 추천 생성 시 - 중복예외를 던진다")
     void throwDuplicatedExceptionWithAlreadyExistRecommendArticle(){
         // given
-        when(accountRepository.findByEmail(EMAIL)).thenReturn(Optional.of(account));
-        when(articleRepository.findById(ARTICLE_ID)).thenReturn(Optional.of(article));
-        when(recommendArticleRepository.existsByAccountAndArticle(account, article))
-                .thenReturn(true);
+        given(accountRepository.findByEmail(EMAIL)).willReturn(Optional.of(account));
+        given(articleRepository.findById(ARTICLE_ID)).willReturn(Optional.of(article));
+        given(recommendArticleRepository.existsByAccountAndArticle(account, article))
+                .willReturn(true);
 
         // when & then
         assertThatThrownBy(() -> recommendArticleService.createRecommendArticle(EMAIL, ARTICLE_ID))
                 .isInstanceOf(DuplicatedException.class);
+        then(recommendArticleRepository).should(never()).save(any(RecommendArticle.class));
     }
 
     @Test
@@ -105,25 +111,28 @@ class RecommendArticleServiceUnitTest {
                 .article(article)
                 .build();
 
-        when(accountRepository.findByEmail(EMAIL)).thenReturn(Optional.of(account));
-        when(articleRepository.findById(ARTICLE_ID)).thenReturn(Optional.of(article));
-        when(recommendArticleRepository.findByAccountAndArticle(account, article)).thenReturn(Optional.of(recommendArticle));
+        given(accountRepository.findByEmail(EMAIL)).willReturn(Optional.of(account));
+        given(articleRepository.findById(ARTICLE_ID)).willReturn(Optional.of(article));
+        given(recommendArticleRepository.findByAccountAndArticle(account, article))
+                .willReturn(Optional.of(recommendArticle));
 
         // when
         ApiResponseDto<String> response = recommendArticleService.deleteRecommendArticle(EMAIL, ARTICLE_ID);
 
         // then
         assertThat(response.getCode()).isSameAs(ApiResponseCode.OK);
+        then(recommendArticleRepository).should().delete(any(RecommendArticle.class));
     }
     
     @Test
     @DisplayName("게시글 추천이 존재하지 않을 때 - 게시글 추천 삭제 시 - NotFoundException 예외를 던진다")
     void throwNotFoundExceptionWithNotExistRecommendArticle() {
         // given
-        when(recommendArticleRepository.findByAccountAndArticle(account, article)).thenThrow(NotFoundException.class);
+        given(recommendArticleRepository.findByAccountAndArticle(account, article)).willThrow(NotFoundException.class);
 
         // when & then
         assertThatThrownBy(() -> recommendArticleService.deleteRecommendArticle(EMAIL, ARTICLE_ID))
                 .isInstanceOf(NotFoundException.class);
+        then(recommendArticleRepository).should(never()).delete(any(RecommendArticle.class));
     }
 }
