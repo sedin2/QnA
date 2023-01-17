@@ -17,7 +17,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-
 @Entity
 @Getter
 @Table(name = "comment")
@@ -44,7 +43,8 @@ public class Comment extends BaseTimeEntity {
     private Account account;
 
     @Builder
-    private Comment(String content, String author, Article article, Account account) {
+    private Comment(Long id, String content, String author, Article article, Account account) {
+        this.id = id;
         this.content = content;
         this.author = author;
         this.article = article;
