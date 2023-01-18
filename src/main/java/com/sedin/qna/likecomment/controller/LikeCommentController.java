@@ -20,7 +20,7 @@ public class LikeCommentController {
     private final LikeCommentService likeCommentService;
 
     @PostMapping
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.CREATED)
     public ApiResponseDto<String> create(@AuthenticationPrincipal String email, @PathVariable Long commentId) {
         return likeCommentService.create(email, commentId);
     }

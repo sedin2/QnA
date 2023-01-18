@@ -1,0 +1,78 @@
+ifndef::snippets[]
+:snippets: ../build/generated-snippets
+endif::[]
+= API Document
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 4
+:sectlinks:
+
+=== link:./index.html[Home]
+
+[[introduction]]
+== 소개
+
+댓글 좋아요 API
+
+[[common]]
+== 공통 사항
+
+=== Common Response
+
+include::{snippets}/common/custom-response-fields.adoc[]
+
+include::{snippets}/common/custom-response-fields-apiResponseCodes.adoc[]
+
+
+&#160;
+
+
+== 댓글 좋아요 API
+
+[[Like-Comment-create]]
+=== 추가
+
+==== Request
+
+include::{snippets}/create-like-comment/request-headers.adoc[]
+
+include::{snippets}/create-like-comment/path-parameters.adoc[]
+
+===== Request HTTP Example
+
+include::{snippets}/create-like-comment/http-request.adoc[]
+
+==== Response
+
+include::{snippets}/create-like-comment/response-body.adoc[]
+
+===== Response HTTP Example
+
+include::{snippets}/create-like-comment/http-response.adoc[]
+
+&#160;
+
+[[Like-Comment-delete]]
+=== 삭제
+
+==== Request
+
+===== Request Header
+include::{snippets}/delete-like-comment/request-headers.adoc[]
+
+===== Path Parameters
+include::{snippets}/delete-like-comment/path-parameters.adoc[]
+
+===== Request HTTP Example
+
+include::{snippets}/delete-like-comment/http-request.adoc[]
+
+==== Response
+
+===== Response HTTP Example
+
+include::{snippets}/delete-like-comment/http-response.adoc[]
+
+&#160;
