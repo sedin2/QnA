@@ -1,5 +1,5 @@
 <h1>QnA</h1>
-<p> <b>QnA</b>는 <b>게시판</b> 프로젝트를 <b>리팩토링</b> 하여 재 구성한 프로젝트 입니다.</p>
+<p> <b>QnA</b>는 <b>게시판</b> 프로젝트 입니다.</p>
 <p> ORM Mapper <b>MyBatis</b> -> <b>Spring Data JPA</b></p>
 <p> No Test Code -> <b>With Test Code</b></p>
 <p> No CI/CD -> <b>GitHub Actions</b> & <b>Docker</b> & <b>AWS EC2</b> CI/CD 구축</p>
